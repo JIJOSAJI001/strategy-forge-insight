@@ -1,7 +1,10 @@
 import { MetricCard } from "@/components/ui/metric-card";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
+import { StrategyCard } from "@/components/dashboard/StrategyCard";
+import { AIAssistantPanel } from "@/components/ai/AIAssistantPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -10,10 +13,14 @@ import {
   BarChart3,
   Play,
   Settings,
-  Plus
+  Plus,
+  Sparkles,
+  AlertTriangle
 } from "lucide-react";
 
 export default function Dashboard() {
+  const [showAI, setShowAI] = useState(false);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -23,9 +30,9 @@ export default function Dashboard() {
           <p className="text-muted-foreground">Monitor your trading strategies and performance</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" size="sm">
-            <Settings className="h-4 w-4 mr-2" />
-            Settings
+          <Button variant="outline" size="sm" onClick={() => setShowAI(!showAI)}>
+            <Sparkles className="h-4 w-4 mr-2" />
+            AI Assistant
           </Button>
           <Button variant="trading" size="sm">
             <Plus className="h-4 w-4 mr-2" />
@@ -33,6 +40,21 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
+
+      {/* AI Insights Banner */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="pt-4">
+          <div className="flex items-center gap-3">
+            <Sparkles className="h-5 w-5 text-primary" />
+            <div>
+              <p className="font-medium">AI Market Insight</p>
+              <p className="text-sm text-muted-foreground">
+                Current market conditions show bullish momentum. Consider increasing allocation to trend-following strategies.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -69,93 +91,39 @@ export default function Dashboard() {
       {/* Charts Section */}
       <DashboardCharts />
 
-      {/* Quick Actions & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button variant="outline" className="w-full justify-start">
-              <Play className="h-4 w-4 mr-2" />
-              Run Backtest
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Strategy
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              View Analysis
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Active Strategies */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Active Strategies</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium">RSI Mean Reversion</p>
-                  <p className="text-sm text-muted-foreground">Running</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium text-success">+8.2%</p>
-                  <p className="text-xs text-muted-foreground">24h</p>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium">Bollinger Bands</p>
-                  <p className="text-sm text-muted-foreground">Paper Trading</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium text-success">+12.7%</p>
-                  <p className="text-xs text-muted-foreground">7d</p>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium">MACD Strategy</p>
-                  <p className="text-sm text-muted-foreground">Backtesting</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium text-danger">-2.1%</p>
-                  <p className="text-xs text-muted-foreground">30d</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Market Insights */}
-        <Card>
-          <CardHeader>
-            <CardTitle>AI Market Insights</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
-                <p className="text-sm font-medium">Bullish Momentum Detected</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Current market conditions favor trend-following strategies
-                </p>
-              </div>
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="text-sm font-medium">Volatility Alert</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Consider adjusting position sizes for high-vol assets
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Strategy Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <StrategyCard
+          name="RSI Mean Reversion"
+          status="running"
+          performance={8.2}
+          sharpe={2.1}
+          maxDrawdown={-5.8}
+          winRate={67.3}
+          lastUpdated="2 hours ago"
+        />
+        <StrategyCard
+          name="Bollinger Bands"
+          status="paper-trading"
+          performance={12.7}
+          sharpe={1.8}
+          maxDrawdown={-7.1}
+          winRate={59.4}
+          lastUpdated="1 day ago"
+        />
+        <StrategyCard
+          name="MACD Strategy"
+          status="backtesting"
+          performance={-2.1}
+          sharpe={1.2}
+          maxDrawdown={-12.3}
+          winRate={51.2}
+          lastUpdated="3 days ago"
+        />
       </div>
+
+      {/* AI Assistant Panel */}
+      <AIAssistantPanel isMinimized={!showAI} onToggleMinimize={() => setShowAI(!showAI)} />
     </div>
   );
 }
