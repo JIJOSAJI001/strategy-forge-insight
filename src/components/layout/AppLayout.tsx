@@ -1,7 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Bell, User } from "lucide-react";
-import "../../../styles.css";
+import "../../styles.css";
 
 interface AppLayoutProps {
   children: React.ReactNode;
