@@ -2,6 +2,8 @@ import { MetricCard } from "@/components/ui/metric-card";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
 import { StrategyCard } from "@/components/dashboard/StrategyCard";
 import { AIAssistantPanel } from "@/components/ai/AIAssistantPanel";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { 
   TrendingUp, 
@@ -15,7 +17,6 @@ import {
   Sparkles,
   AlertTriangle
 } from "lucide-react";
-import "../styles.css";
 
 export default function Dashboard() {
   const [showAI, setShowAI] = useState(false);
@@ -23,28 +24,28 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="dashboard-header">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="dashboard-title">Dashboard</h1>
-          <p className="dashboard-subtitle">Monitor your trading strategies and performance</p>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground">Monitor your trading strategies and performance</p>
         </div>
         <div className="flex gap-3">
-          <button className="btn btn-outline btn-sm" onClick={() => setShowAI(!showAI)}>
-            <Sparkles className="icon-sm mr-2" />
+          <Button variant="outline" size="sm" onClick={() => setShowAI(!showAI)}>
+            <Sparkles className="h-4 w-4 mr-2" />
             AI Assistant
-          </button>
-          <button className="btn btn-trading btn-sm">
-            <Plus className="icon-sm mr-2" />
+          </Button>
+          <Button variant="trading" size="sm">
+            <Plus className="h-4 w-4 mr-2" />
             New Strategy
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* AI Insights Banner */}
-      <div className="card" style={{borderColor: 'var(--primary)', backgroundColor: 'hsl(217, 91%, 60%, 0.05)'}}>
-        <div className="card-content pt-4">
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="pt-4">
           <div className="flex items-center gap-3">
-            <Sparkles className="icon text-primary" />
+            <Sparkles className="h-5 w-5 text-primary" />
             <div>
               <p className="font-medium">AI Market Insight</p>
               <p className="text-sm text-muted-foreground">
@@ -52,8 +53,8 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
