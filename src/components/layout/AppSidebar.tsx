@@ -12,7 +12,8 @@ import {
   Zap,
   PlayCircle,
   FileText,
-  Download
+  Download,
+  User
 } from "lucide-react";
 
 import {
@@ -43,6 +44,7 @@ const tools = [
   { title: "AI Assistant", url: "/ai-assistant", icon: Brain },
   { title: "Reports", url: "/reports", icon: FileText },
   { title: "Export", url: "/export", icon: Download },
+  { title: "Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
