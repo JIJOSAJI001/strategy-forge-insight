@@ -1,0 +1,187 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Trading Platform Design System - Professional Dark Navy Theme */
+
+@layer base {
+  :root {
+    /* Core Background & Text */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    /* Cards & Surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --card-hover: 0 0% 98%;
+
+    /* Overlays */
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    /* Primary Trading Blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 217 91% 65%;
+
+    /* Secondary Neutral */
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 10% 3.9%;
+
+    /* Muted Elements */
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+
+    /* Accent Highlights */
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 10% 3.9%;
+
+    /* Trading Colors */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --danger: 0 84% 60%;
+    --danger-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Destructive (Legacy) */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & Inputs */
+    --border: 240 6% 84%;
+    --input: 240 6% 84%;
+    --ring: 217 91% 60%;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 10% 3.9%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 240 10% 3.9%;
+    --sidebar-border: 240 6% 84%;
+    --sidebar-ring: 217 91% 60%;
+
+    /* Chart Colors */
+    --chart-1: 217 91% 60%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 47 96% 53%;
+    --chart-4: 271 91% 65%;
+    --chart-5: 0 84% 60%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
+    --gradient-success: linear-gradient(135deg, hsl(142 71% 45%), hsl(142 71% 55%));
+    --gradient-danger: linear-gradient(135deg, hsl(0 84% 60%), hsl(0 84% 70%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 0% 98%));
+
+    /* Shadows */
+    --shadow-card: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.06);
+    --shadow-glow: 0 0 40px hsl(217 91% 60% / 0.15);
+    --shadow-success: 0 0 30px hsl(142 71% 45% / 0.2);
+    --shadow-danger: 0 0 30px hsl(0 84% 60% / 0.2);
+
+    /* Radius */
+    --radius: 0.75rem;
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .dark {
+    /* Core Background & Text - Dark Navy Theme */
+    --background: 222 84% 5%; /* #111827 */
+    --foreground: 210 40% 98%; /* #F9FAFB */
+
+    /* Cards & Surfaces */
+    --card: 217 33% 17%; /* #1F2937 */
+    --card-foreground: 210 40% 98%;
+    --card-hover: 217 33% 20%;
+
+    /* Overlays */
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Primary Trading Blue */
+    --primary: 217 91% 60%; /* #3B82F6 */
+    --primary-foreground: 210 40% 98%;
+    --primary-hover: 217 91% 65%;
+
+    /* Secondary Neutral */
+    --secondary: 217 33% 20%;
+    --secondary-foreground: 210 40% 98%;
+
+    /* Muted Elements */
+    --muted: 217 33% 20%;
+    --muted-foreground: 156 16% 63%; /* #9CA3AF */
+
+    /* Accent Highlights */
+    --accent: 217 33% 20%;
+    --accent-foreground: 210 40% 98%;
+
+    /* Trading Colors - Vibrant Accents */
+    --success: 142 71% 45%; /* #10B981 - Green for positive */
+    --success-foreground: 210 40% 98%;
+    --danger: 0 84% 60%; /* #EF4444 - Red for negative */
+    --danger-foreground: 210 40% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 210 40% 98%;
+
+    /* Destructive (Legacy) */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Borders & Inputs */
+    --border: 217 33% 25%;
+    --input: 217 33% 25%;
+    --ring: 217 91% 60%;
+
+    /* Sidebar - Dark Navy */
+    --sidebar-background: 222 84% 5%; /* #111827 */
+    --sidebar-foreground: 210 40% 98%; /* #F9FAFB */
+    --sidebar-primary: 217 91% 60%; /* #3B82F6 */
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 217 33% 17%; /* #1F2937 */
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 25%;
+    --sidebar-ring: 217 91% 60%;
+
+    /* Chart Colors */
+    --chart-1: 217 91% 60%; /* Blue */
+    --chart-2: 142 71% 45%; /* Green */
+    --chart-3: 47 96% 53%; /* Yellow */
+    --chart-4: 271 91% 65%; /* Purple */
+    --chart-5: 0 84% 60%; /* Red */
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
+    --gradient-success: linear-gradient(135deg, hsl(142 71% 45%), hsl(142 71% 55%));
+    --gradient-danger: linear-gradient(135deg, hsl(0 84% 60%), hsl(0 84% 70%));
+    --gradient-card: linear-gradient(135deg, hsl(217 33% 17%), hsl(217 33% 20%));
+
+    /* Shadows */
+    --shadow-card: 0 4px 6px -1px hsl(222 84% 3% / 0.3), 0 2px 4px -1px hsl(222 84% 3% / 0.2);
+    --shadow-glow: 0 0 40px hsl(217 91% 60% / 0.15);
+    --shadow-success: 0 0 30px hsl(142 71% 45% / 0.2);
+    --shadow-danger: 0 0 30px hsl(0 84% 60% / 0.2);
+
+    /* Radius */
+    --radius: 0.75rem;
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
