@@ -8,7 +8,22 @@ Strategy Forge Insight is a comprehensive trading strategy development and backt
 ```
 strategy-forge-insight/
 ├── Backend/                           # Backend API and services
-│   └── (Currently empty - needs implementation)
+│   ├── api/                           # API modules
+│   │   ├── __init__.py
+│   │   └── strategy.py                # Strategy-related API endpoints
+│   ├── db/                            # Database modules
+│   │   ├── __init__.py
+│   │   └── mongo.py                   # MongoDB connection and operations
+│   ├── scripts/                       # Utility scripts
+│   │   ├── add_sample_data.py         # Script to populate database with sample data
+│   │   └── view_database.py           # Script to view database contents
+│   ├── __pycache__/                   # Python cache files
+│   ├── .env                           # Environment variables
+│   ├── DATABASE_GUIDE.md              # Database setup and usage guide
+│   ├── debug_api.py                   # Debug API implementation
+│   ├── env.example                    # Environment variables template
+│   ├── final_api.py                   # Final API implementation
+│   └── main.py                        # Main application entry point
 ├── frontend/                          # React + TypeScript frontend
 │   ├── dist/                          # Build output
 │   ├── node_modules/                  # Dependencies
@@ -22,14 +37,26 @@ strategy-forge-insight/
 │   │   │   │   └── AIAssistantPanel.tsx
 │   │   │   ├── auth/                  # Authentication components
 │   │   │   │   ├── AuthDialog.tsx
-│   │   │   │   └── ProfileDialog.tsx
+│   │   │   │   ├── ProfileDialog.tsx
+│   │   │   │   └── ProtectedRoute.tsx
 │   │   │   ├── dashboard/             # Dashboard components
+│   │   │   │   ├── ActivityFeed.tsx
+│   │   │   │   ├── AIMarketInsightPanel.tsx
 │   │   │   │   ├── DashboardCharts.tsx
+│   │   │   │   ├── DashboardFooter.tsx
+│   │   │   │   ├── PortfolioHealthCard.tsx
+│   │   │   │   ├── QuickActions.tsx
 │   │   │   │   └── StrategyCard.tsx
+│   │   │   ├── landing/               # Landing page components
+│   │   │   │   ├── Features.tsx
+│   │   │   │   ├── Footer.tsx
+│   │   │   │   ├── Hero.tsx
+│   │   │   │   ├── HowItWorks.tsx
+│   │   │   │   └── Navbar.tsx
 │   │   │   ├── layout/                # Layout components
 │   │   │   │   ├── AppLayout.tsx
 │   │   │   │   └── AppSidebar.tsx
-│   │   │   └── ui/                    # UI component library
+│   │   │   └── ui/                    # UI component library (shadcn/ui)
 │   │   │       ├── accordion.tsx
 │   │   │       ├── alert-dialog.tsx
 │   │   │       ├── alert.tsx
@@ -74,6 +101,7 @@ strategy-forge-insight/
 │   │   │       ├── table.tsx
 │   │   │       ├── tabs.tsx
 │   │   │       ├── textarea.tsx
+│   │   │       ├── theme-toggle.tsx
 │   │   │       ├── toast.tsx
 │   │   │       ├── toaster.tsx
 │   │   │       ├── toggle-group.tsx
@@ -81,7 +109,8 @@ strategy-forge-insight/
 │   │   │       ├── tooltip.tsx
 │   │   │       └── use-toast.ts
 │   │   ├── contexts/                  # React contexts
-│   │   │   └── AuthContext.tsx
+│   │   │   ├── AuthContext.tsx
+│   │   │   └── ThemeContext.tsx
 │   │   ├── hooks/                     # Custom React hooks
 │   │   │   ├── use-mobile.tsx
 │   │   │   └── use-toast.ts
@@ -91,6 +120,7 @@ strategy-forge-insight/
 │   │   ├── pages/                     # Page components
 │   │   │   ├── Backtesting.tsx
 │   │   │   ├── Dashboard.tsx
+│   │   │   ├── Landing.tsx
 │   │   │   ├── NotFound.tsx
 │   │   │   ├── PaperTrading.tsx
 │   │   │   ├── Profile.tsx
@@ -114,66 +144,59 @@ strategy-forge-insight/
 │   ├── tsconfig.json                 # TypeScript base config
 │   ├── tsconfig.node.json            # TypeScript node config
 │   └── vite.config.ts                # Vite build configuration
-└── .git/                              # Git repository
+├── .git/                              # Git repository
+└── PROJECT_STRUCTURE.md               # This file
 ```
 
 ## Recommended Complete Project Structure
 
 ```
 strategy-forge-insight/
-├── Backend/                           # Backend API and services
-│   ├── src/
-│   │   ├── controllers/               # API route controllers
-│   │   │   ├── auth.controller.ts
-│   │   │   ├── strategy.controller.ts
-│   │   │   ├── backtest.controller.ts
-│   │   │   ├── market.controller.ts
-│   │   │   └── ai.controller.ts
-│   │   ├── services/                  # Business logic services
-│   │   │   ├── auth.service.ts
-│   │   │   ├── strategy.service.ts
-│   │   │   ├── backtest.service.ts
-│   │   │   ├── market.service.ts
-│   │   │   ├── ai.service.ts
-│   │   │   └── notification.service.ts
-│   │   ├── models/                    # Data models and schemas
-│   │   │   ├── user.model.ts
-│   │   │   ├── strategy.model.ts
-│   │   │   ├── backtest.model.ts
-│   │   │   ├── trade.model.ts
-│   │   │   └── market.model.ts
-│   │   ├── middleware/                # Express middleware
-│   │   │   ├── auth.middleware.ts
-│   │   │   ├── validation.middleware.ts
-│   │   │   ├── error.middleware.ts
-│   │   │   └── rate-limit.middleware.ts
-│   │   ├── routes/                    # API route definitions
-│   │   │   ├── auth.routes.ts
-│   │   │   ├── strategy.routes.ts
-│   │   │   ├── backtest.routes.ts
-│   │   │   ├── market.routes.ts
-│   │   │   └── ai.routes.ts
-│   │   ├── utils/                     # Utility functions
-│   │   │   ├── database.ts
-│   │   │   ├── logger.ts
-│   │   │   ├── validation.ts
-│   │   │   └── helpers.ts
-│   │   ├── config/                    # Configuration files
-│   │   │   ├── database.config.ts
-│   │   │   ├── redis.config.ts
-│   │   │   └── environment.config.ts
-│   │   ├── types/                     # TypeScript type definitions
-│   │   │   ├── auth.types.ts
-│   │   │   ├── strategy.types.ts
-│   │   │   ├── backtest.types.ts
-│   │   │   └── market.types.ts
-│   │   ├── tests/                     # Backend tests
-│   │   │   ├── unit/
-│   │   │   ├── integration/
-│   │   │   └── e2e/
-│   │   └── app.ts                     # Express app setup
-│   ├── package.json                   # Backend dependencies
-│   ├── tsconfig.json                  # TypeScript configuration
+├── Backend/                           # Backend API and services (FastAPI + Python)
+│   ├── api/                           # API route modules
+│   │   ├── __init__.py
+│   │   ├── strategy.py                # Strategy-related endpoints
+│   │   ├── auth.py                    # Authentication endpoints
+│   │   ├── backtest.py                # Backtesting endpoints
+│   │   ├── market.py                  # Market data endpoints
+│   │   └── ai.py                      # AI service endpoints
+│   ├── db/                            # Database modules
+│   │   ├── __init__.py
+│   │   ├── mongo.py                   # MongoDB connection and operations
+│   │   └── models.py                  # Pydantic models and schemas
+│   ├── services/                      # Business logic services
+│   │   ├── __init__.py
+│   │   ├── auth_service.py
+│   │   ├── strategy_service.py
+│   │   ├── backtest_service.py
+│   │   ├── market_service.py
+│   │   └── ai_service.py
+│   ├── middleware/                    # FastAPI middleware
+│   │   ├── __init__.py
+│   │   ├── auth_middleware.py
+│   │   ├── cors_middleware.py
+│   │   └── error_middleware.py
+│   ├── utils/                         # Utility functions
+│   │   ├── __init__.py
+│   │   ├── database.py
+│   │   ├── logger.py
+│   │   ├── validation.py
+│   │   └── helpers.py
+│   ├── config/                        # Configuration files
+│   │   ├── __init__.py
+│   │   ├── database_config.py
+│   │   ├── redis_config.py
+│   │   └── environment_config.py
+│   ├── tests/                         # Backend tests
+│   │   ├── __init__.py
+│   │   ├── test_strategy.py
+│   │   ├── test_auth.py
+│   │   └── test_backtest.py
+│   ├── scripts/                       # Utility scripts
+│   │   ├── add_sample_data.py
+│   │   └── view_database.py
+│   ├── main.py                        # FastAPI app entry point
+│   ├── requirements.txt               # Python dependencies
 │   ├── .env.example                   # Environment variables template
 │   ├── .env                           # Environment variables (gitignored)
 │   ├── Dockerfile                     # Docker configuration
@@ -349,11 +372,21 @@ strategy-forge-insight/
 
 ### Technology Stack
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Shadcn/ui
-- **Backend**: Node.js, Express, TypeScript, MongoDB/PostgreSQL
+- **Backend**: FastAPI, Python 3.x, Uvicorn, Motor (async MongoDB driver)
+- **Database**: MongoDB Atlas
 - **Real-time**: WebSocket, Socket.io
 - **AI/ML**: TensorFlow.js, OpenAI API
 - **Deployment**: Docker, AWS/Heroku
 - **Testing**: Jest, React Testing Library, Cypress
+
+### Backend Dependencies
+- **FastAPI**: Modern, fast web framework for building APIs
+- **Uvicorn**: ASGI server for running FastAPI applications
+- **Motor**: Async MongoDB driver for Python
+- **PyMongo**: MongoDB driver for Python
+- **Pydantic**: Data validation using Python type annotations
+- **Python-dotenv**: Environment variable management
+- **Python-multipart**: File upload support
 
 ## Development Guidelines
 

@@ -7,6 +7,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import StrategyBuilder from "./pages/StrategyBuilder";
+import DragDropStrategyBuilder from "./pages/DragDropStrategyBuilder";
 import Backtesting from "./pages/Backtesting";
 import StrategyLibrary from "./pages/StrategyLibrary";
 import PaperTrading from "./pages/PaperTrading";
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/" element={<Landing />} />
               <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
               <Route path="/strategy-builder" element={<ProtectedRoute><AppLayout><StrategyBuilder /></AppLayout></ProtectedRoute>} />
+              <Route path="/drag-drop-strategy-builder" element={<ProtectedRoute><AppLayout><DragDropStrategyBuilder /></AppLayout></ProtectedRoute>} />
               <Route path="/backtesting" element={<ProtectedRoute><AppLayout><Backtesting /></AppLayout></ProtectedRoute>} />
               <Route path="/strategies" element={<ProtectedRoute><AppLayout><StrategyLibrary /></AppLayout></ProtectedRoute>} />
               <Route path="/optimization" element={<ProtectedRoute><AppLayout><div className="p-8 text-center"><h1 className="text-2xl font-bold">Parameter Optimization</h1><p className="text-muted-foreground">Coming soon...</p></div></AppLayout></ProtectedRoute>} />

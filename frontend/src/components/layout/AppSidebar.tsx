@@ -14,7 +14,8 @@ import {
   FileText,
   Download,
   User,
-  Sparkles
+  Sparkles,
+  MousePointer
 } from "lucide-react";
 
 import {
@@ -36,6 +37,7 @@ const navigation = [
   { title: "Portfolio", url: "/portfolio", icon: Target },
   { title: "AI Assistant", url: "/ai-assistant", icon: Sparkles },
   { title: "Strategy Builder", url: "/strategy-builder", icon: Bot },
+  { title: "Drag & Drop Builder", url: "/drag-drop-strategy-builder", icon: MousePointer },
   { title: "Paper Trading", url: "/paper-trading", icon: PlayCircle },
 ];
 
