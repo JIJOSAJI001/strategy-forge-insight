@@ -31,6 +31,17 @@ A FastAPI backend for the Strategy Forge application that connects to MongoDB At
 - `GET /api/strategies` - Get all strategies
 - `GET /api/strategies/{strategy_id}` - Get a specific strategy
 
+### Backtesting Data Management
+
+- Place pre-downloaded OHLCV files in `Backend/data/` as CSV or Parquet. Supported names:
+  - `{SYMBOL}.csv|parquet` or `{SYMBOL}_{TIMEFRAME}.csv|parquet` (e.g., `NIFTY.parquet`, `INFY_1d.csv`).
+- Endpoints:
+  - `GET /api/data/symbols` — list detected symbols from local data.
+  - `POST /api/data/force-refresh?symbol=INFY&start_date=2020-01-01&end_date=2024-01-01&timeframe=1d` — refresh cache and return summary.
+  - `POST /api/backtest/run` — body: `{ "symbol": "INFY", "start_date": "2020-01-01", "end_date": "2024-01-01", "timeframe": "1d" }`.
+
+Mongo collection `historical_data` structure aligns with the platform schema and is populated automatically by fetches or local file loads.
+
 ## MongoDB Schema
 
 The strategies collection should contain documents with the following structure:
