@@ -1,20 +1,4 @@
-import { useState, useCallback } from "react";
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  closestCorners,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  arrayMove,
-} from "@dnd-kit/sortable";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,409 +7,254 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Plus, 
-  Trash2, 
   Save, 
   Play, 
   Download, 
   Copy,
-  Settings,
   BarChart3,
-  TrendingUp,
-  TrendingDown,
   Target,
-  Shield
+  Shield,
+  AlertCircle,
+  CheckCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import { strategyService } from "@/services/strategy.service";
-import DraggableParameter from "@/components/strategy/DraggableParameter";
-import DroppableZone from "@/components/strategy/DroppableZone";
-import ParameterLibrary from "@/components/strategy/ParameterLibrary";
-import StrategyPreview from "@/components/strategy/StrategyPreview";
+import { 
+  StrategyDefinition, 
+  IndicatorDef, 
+  ConditionDef, 
+  RiskManagementDef,
+  ValidationError 
+} from "@/types/strategy";
+import RiskManagementForm from "@/components/strategy/RiskManagementForm";
+import IndicatorLibrary from "@/components/strategy/IndicatorLibrary";
+import ConditionLibrary from "@/components/strategy/ConditionLibrary";
+import WorkspaceCanvas from "@/components/strategy/WorkspaceCanvas";
+import { DndContext, DragEndEvent, DragStartEvent, DragOverlay } from "@dnd-kit/core";
+import IndicatorConfigModal from "@/components/strategy/IndicatorConfigModal";
+import ConditionEditorModal from "@/components/strategy/ConditionEditorModal";
 
-// Types
-export interface Parameter {
-  id: string;
-  type: 'indicator' | 'condition' | 'action';
-  name: string;
-  category: string;
-  description: string;
-  config: Record<string, any>;
-  icon: React.ReactNode;
-}
-
-export interface StrategyCondition {
-  id: string;
-  parameters: Parameter[];
-  logic: 'AND' | 'OR';
-}
-
-export interface Strategy {
-  name: string;
-  description: string;
-  timeframe: string;
-  conditions: StrategyCondition[];
+// Default strategy definition
+const DEFAULT_STRATEGY: StrategyDefinition = {
+  name: '',
+  description: '',
+  ownerId: 'anonymous', // TODO: Get from auth context
+  visibility: 'private',
+  timeframe: '1h',
+  indicators: [],
+  conditions: [],
   riskManagement: {
-    stopLoss: number;
-    takeProfit: number;
-    positionSize: number;
-    maxPositions: number;
-    riskPerTrade: number;
-  };
-}
-
-// Sample parameters library
-const PARAMETER_LIBRARY: Parameter[] = [
-  // Indicators
-  {
-    id: 'rsi',
-    type: 'indicator',
-    name: 'RSI',
-    category: 'Momentum',
-    description: 'Relative Strength Index',
-    config: { period: 14, overbought: 70, oversold: 30 },
-    icon: <BarChart3 className="h-4 w-4" />
+    stopLoss: { type: 'percentage', value: 5 },
+    takeProfit: { type: 'percentage', value: 10 },
+    capital: 10000,
+    positionSize: 'percent_of_equity',
+    positionValue: 10
   },
-  {
-    id: 'sma',
-    type: 'indicator',
-    name: 'SMA',
-    category: 'Trend',
-    description: 'Simple Moving Average',
-    config: { period: 20 },
-    icon: <TrendingUp className="h-4 w-4" />
-  },
-  {
-    id: 'ema',
-    type: 'indicator',
-    name: 'EMA',
-    category: 'Trend',
-    description: 'Exponential Moving Average',
-    config: { period: 20 },
-    icon: <TrendingUp className="h-4 w-4" />
-  },
-  {
-    id: 'macd',
-    type: 'indicator',
-    name: 'MACD',
-    category: 'Momentum',
-    description: 'Moving Average Convergence Divergence',
-    config: { fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
-    icon: <BarChart3 className="h-4 w-4" />
-  },
-  {
-    id: 'bollinger',
-    type: 'indicator',
-    name: 'Bollinger Bands',
-    category: 'Volatility',
-    description: 'Bollinger Bands',
-    config: { period: 20, stdDev: 2 },
-    icon: <Target className="h-4 w-4" />
-  },
-  
-  // Conditions
-  {
-    id: 'greater_than',
-    type: 'condition',
-    name: 'Greater Than',
-    category: 'Comparison',
-    description: 'Value is greater than threshold',
-    config: { threshold: 0 },
-    icon: <TrendingUp className="h-4 w-4" />
-  },
-  {
-    id: 'less_than',
-    type: 'condition',
-    name: 'Less Than',
-    category: 'Comparison',
-    description: 'Value is less than threshold',
-    config: { threshold: 0 },
-    icon: <TrendingDown className="h-4 w-4" />
-  },
-  {
-    id: 'crosses_above',
-    type: 'condition',
-    name: 'Crosses Above',
-    category: 'Crossover',
-    description: 'Line crosses above another line',
-    config: {},
-    icon: <TrendingUp className="h-4 w-4" />
-  },
-  {
-    id: 'crosses_below',
-    type: 'condition',
-    name: 'Crosses Below',
-    category: 'Crossover',
-    description: 'Line crosses below another line',
-    config: {},
-    icon: <TrendingDown className="h-4 w-4" />
-  },
-  
-  // Actions
-  {
-    id: 'buy',
-    type: 'action',
-    name: 'Buy',
-    category: 'Entry',
-    description: 'Open long position',
-    config: {},
-    icon: <TrendingUp className="h-4 w-4" />
-  },
-  {
-    id: 'sell',
-    type: 'action',
-    name: 'Sell',
-    category: 'Exit',
-    description: 'Close position',
-    config: {},
-    icon: <TrendingDown className="h-4 w-4" />
-  },
-  {
-    id: 'stop_loss',
-    type: 'action',
-    name: 'Stop Loss',
-    category: 'Risk',
-    description: 'Set stop loss',
-    config: { percentage: 5 },
-    icon: <Shield className="h-4 w-4" />
-  },
-  {
-    id: 'take_profit',
-    type: 'action',
-    name: 'Take Profit',
-    category: 'Risk',
-    description: 'Set take profit',
-    config: { percentage: 10 },
-    icon: <Target className="h-4 w-4" />
-  }
-];
+  pineScriptCode: null
+};
 
 export default function DragDropStrategyBuilder() {
-  const [strategy, setStrategy] = useState<Strategy>({
-    name: '',
-    description: '',
-    timeframe: '1h',
-    conditions: [],
-    riskManagement: {
-      stopLoss: 5,
-      takeProfit: 10,
-      positionSize: 10,
-      maxPositions: 5,
-      riskPerTrade: 2
-    }
-  });
+  const [strategy, setStrategy] = useState<StrategyDefinition>(DEFAULT_STRATEGY);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [isValidating, setIsValidating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showDesc, setShowDesc] = useState(false);
+  const [indicatorTemplate, setIndicatorTemplate] = useState<any | null>(null);
+  const [conditionPreset, setConditionPreset] = useState<string | undefined>(undefined);
+  const [indicatorModalOpen, setIndicatorModalOpen] = useState(false);
+  const [conditionModalOpen, setConditionModalOpen] = useState(false);
+  const [activeDrag, setActiveDrag] = useState<any | null>(null);
 
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [selectedCondition, setSelectedCondition] = useState<string | null>(null);
+  // Indicator management
+  const addIndicator = (indicator: IndicatorDef) => {
+    setStrategy(prev => ({
+      ...prev,
+      indicators: [...prev.indicators, indicator]
+    }));
+  };
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    })
-  );
+  const updateIndicator = (id: string, indicator: IndicatorDef) => {
+    setStrategy(prev => ({
+      ...prev,
+      indicators: prev.indicators.map(ind => ind.id === id ? indicator : ind)
+    }));
+  };
 
+  const removeIndicator = (id: string) => {
+    setStrategy(prev => ({
+      ...prev,
+      indicators: prev.indicators.filter(ind => ind.id !== id),
+      conditions: prev.conditions.filter(cond => 
+        cond.expression.left !== id && 
+        cond.expression.right.indicator !== id
+      )
+    }));
+  };
+
+  const duplicateIndicator = (indicator: IndicatorDef) => {
+    let counter = 1;
+    let newId = `${indicator.id}_copy${counter}`;
+    while (strategy.indicators.some(i => i.id === newId)) { counter++; newId = `${indicator.id}_copy${counter}`; }
+    addIndicator({ ...indicator, id: newId });
+  };
+
+  // Condition management
+  const addCondition = (condition: ConditionDef) => {
+    setStrategy(prev => ({
+      ...prev,
+      conditions: [...prev.conditions, condition]
+    }));
+  };
+
+  const updateCondition = (id: string, condition: ConditionDef) => {
+    setStrategy(prev => ({
+      ...prev,
+      conditions: prev.conditions.map(cond => cond.id === id ? condition : cond)
+    }));
+  };
+
+  const removeCondition = (id: string) => {
+    setStrategy(prev => ({
+      ...prev,
+      conditions: prev.conditions.filter(cond => cond.id !== id)
+    }));
+  };
+
+  const duplicateCondition = (condition: ConditionDef) => {
+    let counter = 1;
+    let newId = `${condition.id}_copy${counter}`;
+    while (strategy.conditions.some(c => c.id === newId)) { counter++; newId = `${condition.id}_copy${counter}`; }
+    addCondition({ ...condition, id: newId });
+  };
+
+  // DnD handlers
+  // DnD scope for whole page
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
+    const data = event.active.data.current as any;
+    if (data) setActiveDrag(data);
   };
-
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    if (activeId === overId) return;
-
-    // Handle dropping parameters into conditions
-    if (overId.startsWith('condition-')) {
-      const conditionId = overId.replace('condition-', '');
-      const parameter = PARAMETER_LIBRARY.find(p => p.id === activeId);
-      
-      if (parameter) {
-        setStrategy(prev => ({
-          ...prev,
-          conditions: prev.conditions.map(condition => 
-            condition.id === conditionId 
-              ? { ...condition, parameters: [...condition.parameters, parameter] }
-              : condition
-          )
-        }));
-      }
-    }
-  };
-
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    if (!over) {
-      setActiveId(null);
-      return;
+    const overId = event.over?.id;
+    if (!overId || overId !== 'workspace-dropzone') return;
+    const data = event.active.data.current as any;
+    if (!data) return;
+    if (data.type === 'indicator') {
+      setIndicatorTemplate(data.template);
+      setIndicatorModalOpen(true);
+    } else if (data.type === 'condition') {
+      setConditionPreset(data.template?.operator);
+      setConditionModalOpen(true);
     }
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    if (activeId === overId) {
-      setActiveId(null);
-      return;
-    }
-
-    // Handle reordering within the same condition
-    if (overId.startsWith('parameter-') && activeId.startsWith('parameter-')) {
-      const activeConditionId = activeId.split('-')[1];
-      const overConditionId = overId.split('-')[1];
-      
-      if (activeConditionId === overConditionId) {
-        setStrategy(prev => ({
-          ...prev,
-          conditions: prev.conditions.map(condition => {
-            if (condition.id === activeConditionId) {
-              const oldIndex = condition.parameters.findIndex(p => p.id === activeId.split('-')[2]);
-              const newIndex = condition.parameters.findIndex(p => p.id === overId.split('-')[2]);
-              
-              return {
-                ...condition,
-                parameters: arrayMove(condition.parameters, oldIndex, newIndex)
-              };
-            }
-            return condition;
-          })
-        }));
-      }
-    }
-
-    setActiveId(null);
+    setActiveDrag(null);
   };
 
-  const addCondition = () => {
-    const newCondition: StrategyCondition = {
-      id: `condition-${Date.now()}`,
-      parameters: [],
-      logic: 'AND'
-    };
-    
+  const existingEntryNames = strategy.conditions.filter(c => c.type === 'entry' && c.action.entryName).map(c => c.action.entryName!)
+    .filter((v, i, a) => a.indexOf(v) === i);
+
+  // Risk management
+  const updateRiskManagement = (riskManagement: RiskManagementDef) => {
     setStrategy(prev => ({
       ...prev,
-      conditions: [...prev.conditions, newCondition]
+      riskManagement
     }));
   };
 
-  const removeCondition = (conditionId: string) => {
-    setStrategy(prev => ({
-      ...prev,
-      conditions: prev.conditions.filter(c => c.id !== conditionId)
-    }));
-  };
-
-  const removeParameter = (conditionId: string, parameterId: string) => {
-    setStrategy(prev => ({
-      ...prev,
-      conditions: prev.conditions.map(condition => 
-        condition.id === conditionId 
-          ? { ...condition, parameters: condition.parameters.filter(p => p.id !== parameterId) }
-          : condition
-      )
-    }));
-  };
-
-  const updateConditionLogic = (conditionId: string, logic: 'AND' | 'OR') => {
-    setStrategy(prev => ({
-      ...prev,
-      conditions: prev.conditions.map(condition => 
-        condition.id === conditionId 
-          ? { ...condition, logic }
-          : condition
-      )
-    }));
-  };
-
-  const saveStrategy = async () => {
+  // Validation
+  const validateStrategy = async () => {
+    setIsValidating(true);
     try {
-      if (!strategy.name.trim()) {
-        toast.error("Please enter a strategy name");
-        return;
-      }
-      
-      if (strategy.conditions.length === 0) {
-        toast.error("Please add at least one condition");
+      const result = await strategyService.validateStrategyDefinition(strategy);
+      setValidationErrors(result.errors);
+      return result.isValid;
+    } catch (error) {
+      console.error('Error validating strategy:', error);
+      toast.error("Failed to validate strategy");
+      return false;
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  // Save strategy
+  const saveStrategy = async () => {
+    setIsSaving(true);
+    try {
+      const isValid = await validateStrategy();
+      if (!isValid) {
+        toast.error("Please fix validation errors before saving");
         return;
       }
 
-      await strategyService.saveStrategy(strategy);
-      toast.success("Strategy saved successfully!");
+      if (strategy.id) {
+        await strategyService.updateStrategyDefinition(strategy.id, strategy);
+        toast.success("Strategy updated successfully!");
+      } else {
+        const savedStrategy = await strategyService.createStrategyDefinition(strategy);
+        setStrategy(savedStrategy);
+        toast.success("Strategy saved successfully!");
+      }
     } catch (error) {
       console.error('Error saving strategy:', error);
       toast.error("Failed to save strategy");
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const generatePineScript = async () => {
-    try {
-      if (!strategy.name.trim()) {
-        toast.error("Please enter a strategy name");
-        return;
-      }
-      
-      if (strategy.conditions.length === 0) {
-        toast.error("Please add at least one condition");
-        return;
-      }
-
-      const response = await strategyService.generatePineScript(strategy);
-      
-      // Copy to clipboard
-      navigator.clipboard.writeText(response.code);
-      toast.success("Pine Script copied to clipboard!");
-    } catch (error) {
-      console.error('Error generating Pine Script:', error);
-      toast.error("Failed to generate Pine Script");
-    }
-  };
-
-  const downloadPineScript = () => {
+  // Generate Pine Script (optional export)
+  const generatePineScript = () => {
+    // Simple Pine Script generation for demonstration
     const pineScript = `// Generated Strategy: ${strategy.name}
 //@version=5
 strategy("${strategy.name}", overlay=true)
 
-// Entry conditions
-${strategy.conditions.map(condition => 
-  condition.parameters.map(param => {
-    switch(param.id) {
-      case 'rsi':
-        return `rsi = ta.rsi(close, ${param.config.period})`;
-      case 'sma':
-        return `sma = ta.sma(close, ${param.config.period})`;
-      case 'ema':
-        return `ema = ta.ema(close, ${param.config.period})`;
-      default:
-        return `// ${param.name} implementation`;
-    }
-  }).join('\n')
-).join('\n')}
+// Indicators
+${strategy.indicators.map(ind => {
+  switch(ind.type) {
+    case 'RSI':
+      return `rsi_${ind.id} = ta.rsi(${ind.params.source}, ${ind.params.length})`;
+    case 'SMA':
+      return `sma_${ind.id} = ta.sma(${ind.params.source}, ${ind.params.length})`;
+    case 'EMA':
+      return `ema_${ind.id} = ta.ema(${ind.params.source}, ${ind.params.length})`;
+    case 'MACD':
+      return `[macd_${ind.id}, signal_${ind.id}, hist_${ind.id}] = ta.macd(${ind.params.source}, ${ind.params.fastPeriod}, ${ind.params.slowPeriod}, ${ind.params.signalPeriod})`;
+    default:
+      return `// ${ind.type} implementation`;
+  }
+}).join('\n')}
 
 // Strategy logic
-if (${strategy.conditions.map(condition => 
-  condition.parameters.map(param => {
-    switch(param.id) {
-      case 'greater_than':
-        return `rsi > ${param.config.threshold}`;
-      case 'less_than':
-        return `rsi < ${param.config.threshold}`;
-      default:
-        return `true`;
-    }
-  }).join(` ${condition.logic} `)
-).join(' and ')})
-    strategy.entry("Long", strategy.long)
+${strategy.conditions.map(cond => {
+  if (cond.type === 'entry') {
+    const left = cond.expression.left;
+    const operator = cond.expression.operator;
+    const right = cond.expression.right.value !== undefined ? cond.expression.right.value : `indicator_${cond.expression.right.indicator}`;
+    return `if (${left} ${operator} ${right})
+    strategy.entry("${cond.action.entryName}", strategy.${cond.action.side})`;
+  }
+  return '';
+}).join('\n')}
 
 // Exit conditions
-strategy.exit("Exit", "Long", stop=strategy.position_avg_price * (1 - ${strategy.riskManagement.stopLoss / 100}), limit=strategy.position_avg_price * (1 + ${strategy.riskManagement.takeProfit / 100}))`;
+${strategy.conditions.filter(cond => cond.type === 'exit').map(cond => {
+  const left = cond.expression.left;
+  const operator = cond.expression.operator;
+  const right = cond.expression.right.value !== undefined ? cond.expression.right.value : `indicator_${cond.expression.right.indicator}`;
+  return `if (${left} ${operator} ${right})
+    strategy.close("${cond.action.exitFrom}")`;
+}).join('\n')}
 
+// Risk management
+strategy.exit("StopLoss", "Long", stop=strategy.position_avg_price * (1 - ${strategy.riskManagement.stopLoss.value / 100}), limit=strategy.position_avg_price * (1 + ${strategy.riskManagement.takeProfit.value / 100}))`;
+
+    return pineScript;
+  };
+
+  const downloadPineScript = () => {
+    const pineScript = generatePineScript();
     const blob = new Blob([pineScript], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -439,245 +268,146 @@ strategy.exit("Exit", "Long", stop=strategy.position_avg_price * (1 - ${strategy
     toast.success("Pine Script downloaded!");
   };
 
-  const activeParameter = PARAMETER_LIBRARY.find(p => p.id === activeId);
+  const copyPineScript = () => {
+    const pineScript = generatePineScript();
+    navigator.clipboard.writeText(pineScript);
+    toast.success("Pine Script copied to clipboard!");
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="container mx-auto p-6 space-y-6">
-          {/* Header */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Drag & Drop Strategy Builder</h1>
-              <p className="text-muted-foreground">Build trading strategies with visual drag-and-drop interface</p>
-            </div>
-            <div className="flex gap-3">
-              <Button variant="outline" size="sm" onClick={saveStrategy}>
-                <Save className="h-4 w-4 mr-2" />
-                Save Strategy
-              </Button>
-              <Button variant="outline" size="sm" onClick={generatePineScript}>
-                <Copy className="h-4 w-4 mr-2" />
-                Copy Pine Script
-              </Button>
-              <Button variant="outline" size="sm" onClick={downloadPineScript}>
-                <Download className="h-4 w-4 mr-2" />
-                Download
-              </Button>
-              <Button variant="trading" size="sm">
-                <Play className="h-4 w-4 mr-2" />
-                Backtest
-              </Button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Parameter Library */}
-            <div className="lg:col-span-1">
-              <ParameterLibrary parameters={PARAMETER_LIBRARY} />
-            </div>
-
-            {/* Strategy Builder Area */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Strategy Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Strategy Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="strategy-name">Strategy Name</Label>
-                      <Input 
-                        id="strategy-name" 
-                        placeholder="My RSI Strategy"
-                        value={strategy.name}
-                        onChange={(e) => setStrategy(prev => ({ ...prev, name: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="timeframe">Timeframe</Label>
-                      <Select 
-                        value={strategy.timeframe}
-                        onValueChange={(value) => setStrategy(prev => ({ ...prev, timeframe: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select timeframe" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1m">1 Minute</SelectItem>
-                          <SelectItem value="5m">5 Minutes</SelectItem>
-                          <SelectItem value="15m">15 Minutes</SelectItem>
-                          <SelectItem value="1h">1 Hour</SelectItem>
-                          <SelectItem value="4h">4 Hours</SelectItem>
-                          <SelectItem value="1d">1 Day</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea 
-                      id="description" 
-                      placeholder="Describe your trading strategy..."
-                      rows={3}
-                      value={strategy.description}
-                      onChange={(e) => setStrategy(prev => ({ ...prev, description: e.target.value }))}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Strategy Conditions */}
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Strategy Conditions</CardTitle>
-                  <Button variant="outline" size="sm" onClick={addCondition}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Condition
-                  </Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {strategy.conditions.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Drag parameters from the library to create your first condition</p>
-                    </div>
-                  ) : (
-                    strategy.conditions.map((condition, index) => (
-                      <div key={condition.id} className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">Condition {index + 1}</Badge>
-                            <Select 
-                              value={condition.logic}
-                              onValueChange={(value: 'AND' | 'OR') => updateConditionLogic(condition.id, value)}
-                            >
-                              <SelectTrigger className="w-20">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="AND">AND</SelectItem>
-                                <SelectItem value="OR">OR</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => removeCondition(condition.id)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        <DroppableZone 
-                          id={`condition-${condition.id}`}
-                          parameters={condition.parameters}
-                          onRemoveParameter={(parameterId) => removeParameter(condition.id, parameterId)}
-                        />
-                        
-                        {index < strategy.conditions.length - 1 && <Separator />}
-                      </div>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Risk Management */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Risk Management</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="stop-loss">Stop Loss (%)</Label>
-                      <Input 
-                        id="stop-loss" 
-                        type="number" 
-                        value={strategy.riskManagement.stopLoss}
-                        onChange={(e) => setStrategy(prev => ({ 
-                          ...prev, 
-                          riskManagement: { ...prev.riskManagement, stopLoss: Number(e.target.value) }
-                        }))}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="take-profit">Take Profit (%)</Label>
-                      <Input 
-                        id="take-profit" 
-                        type="number" 
-                        value={strategy.riskManagement.takeProfit}
-                        onChange={(e) => setStrategy(prev => ({ 
-                          ...prev, 
-                          riskManagement: { ...prev.riskManagement, takeProfit: Number(e.target.value) }
-                        }))}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="position-size">Position Size (%)</Label>
-                      <Input 
-                        id="position-size" 
-                        type="number" 
-                        value={strategy.riskManagement.positionSize}
-                        onChange={(e) => setStrategy(prev => ({ 
-                          ...prev, 
-                          riskManagement: { ...prev.riskManagement, positionSize: Number(e.target.value) }
-                        }))}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="max-positions">Max Positions</Label>
-                      <Input 
-                        id="max-positions" 
-                        type="number" 
-                        value={strategy.riskManagement.maxPositions}
-                        onChange={(e) => setStrategy(prev => ({ 
-                          ...prev, 
-                          riskManagement: { ...prev.riskManagement, maxPositions: Number(e.target.value) }
-                        }))}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="risk-per-trade">Risk per Trade (%)</Label>
-                      <Input 
-                        id="risk-per-trade" 
-                        type="number" 
-                        value={strategy.riskManagement.riskPerTrade}
-                        onChange={(e) => setStrategy(prev => ({ 
-                          ...prev, 
-                          riskManagement: { ...prev.riskManagement, riskPerTrade: Number(e.target.value) }
-                        }))}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Preview Panel */}
-            <div className="lg:col-span-1">
-              <StrategyPreview strategy={strategy} />
-            </div>
+      <div className="container mx-auto p-4 space-y-4">
+        {/* Compact top bar */}
+        <div className="flex items-center gap-3">
+          <Input placeholder="Strategy Name" value={strategy.name} onChange={(e) => setStrategy(prev => ({ ...prev, name: e.target.value }))} className="h-8 max-w-xs" />
+          <Select value={strategy.timeframe} onValueChange={(value) => setStrategy(prev => ({ ...prev, timeframe: value }))}>
+            <SelectTrigger className="h-8 w-28"><SelectValue placeholder="TF" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1m">1m</SelectItem>
+              <SelectItem value="5m">5m</SelectItem>
+              <SelectItem value="15m">15m</SelectItem>
+              <SelectItem value="1h">1h</SelectItem>
+              <SelectItem value="4h">4h</SelectItem>
+              <SelectItem value="1d">1d</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={strategy.visibility} onValueChange={(value: "private" | "public") => setStrategy(prev => ({ ...prev, visibility: value }))}>
+            <SelectTrigger className="h-8 w-28"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="private">Private</SelectItem>
+              <SelectItem value="public">Public</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="ghost" size="sm" onClick={() => setShowDesc(s => !s)}>Description</Button>
+          <div className="ml-auto flex gap-2">
+            <Button variant="outline" size="sm" onClick={validateStrategy} disabled={isValidating}>
+              {isValidating ? <AlertCircle className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}Validate
+            </Button>
+            <Button variant="outline" size="sm" onClick={copyPineScript}><Copy className="h-4 w-4 mr-2" />Export PS</Button>
+            <Button variant="outline" size="sm" onClick={downloadPineScript}><Download className="h-4 w-4 mr-2" />Download</Button>
+            <Button variant="default" size="sm" onClick={saveStrategy} disabled={isSaving || validationErrors.length > 0}><Save className="h-4 w-4 mr-2" />{isSaving ? 'Saving...' : 'Save'}</Button>
+            <Button variant="trading" size="sm"><Play className="h-4 w-4 mr-2" />Backtest</Button>
           </div>
         </div>
 
-        <DragOverlay>
-          {activeParameter ? (
-            <DraggableParameter parameter={activeParameter} isOverlay />
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+        {showDesc && (
+          <Card>
+            <CardContent className="pt-6">
+              <Textarea rows={3} placeholder="Description..." value={strategy.description} onChange={(e) => setStrategy(prev => ({ ...prev, description: e.target.value }))} />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <Card className="border-destructive">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertCircle className="h-4 w-4 text-destructive" />
+                <span className="font-medium text-destructive">Validation Errors</span>
+              </div>
+              <ul className="text-sm text-destructive space-y-1">
+                {validationErrors.map((error, index) => (
+                  <li key={index}>• {error.message}</li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Three-column layout with workspace center */}
+        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+            <div className="lg:col-span-1">
+              <IndicatorLibrary />
+            </div>
+            <div className="lg:col-span-3">
+              <WorkspaceCanvas
+                indicators={strategy.indicators}
+                conditions={strategy.conditions}
+                onEditIndicator={(id) => {
+                  const found = strategy.indicators.find(i => i.id === id);
+                  if (!found) return;
+                  setIndicatorTemplate({ id: found.type, defaultParams: found.params, name: found.type, category: "", description: "" });
+                  setIndicatorModalOpen(true);
+                }}
+                onDuplicateIndicator={(id) => {
+                  const found = strategy.indicators.find(i => i.id === id);
+                  if (found) duplicateIndicator(found);
+                }}
+                onDeleteIndicator={removeIndicator}
+                onEditCondition={(id) => {
+                  setConditionPreset(undefined);
+                  setConditionModalOpen(true);
+                }}
+                onDuplicateCondition={(id) => {
+                  const found = strategy.conditions.find(c => c.id === id);
+                  if (found) duplicateCondition(found);
+                }}
+                onDeleteCondition={removeCondition}
+              />
+            </div>
+            <div className="lg:col-span-1">
+              <ConditionLibrary />
+            </div>
+          </div>
+          <DragOverlay>
+            {activeDrag?.type === 'indicator' && (
+              <div className="p-3 rounded-lg border bg-card shadow-2xl ring-2 ring-primary/40 scale-[1.03]">
+                <div className="text-sm font-medium">{activeDrag.template?.name || activeDrag.template?.id}</div>
+                <div className="text-xs text-muted-foreground">{activeDrag.template?.category}</div>
+              </div>
+            )}
+            {activeDrag?.type === 'condition' && (
+              <div className="p-3 rounded-lg border bg-card shadow-2xl ring-2 ring-primary/40 scale-[1.03]">
+                <div className="text-sm font-medium">{activeDrag.template?.name}</div>
+                <div className="text-xs text-muted-foreground">{activeDrag.template?.category}</div>
+              </div>
+            )}
+          </DragOverlay>
+        </DndContext>
+
+        {/* Bottom Risk Management */}
+        <RiskManagementForm riskManagement={strategy.riskManagement} onChange={updateRiskManagement} />
+
+        {/* Modals */}
+        <IndicatorConfigModal
+          open={indicatorModalOpen}
+          template={indicatorTemplate}
+          existingIds={strategy.indicators.map(i => i.id)}
+          onClose={() => setIndicatorModalOpen(false)}
+          onConfirm={(indicator) => { addIndicator(indicator); setIndicatorModalOpen(false); }}
+        />
+        <ConditionEditorModal
+          open={conditionModalOpen}
+          presetOperator={conditionPreset}
+          indicators={strategy.indicators}
+          existingIds={strategy.conditions.map(c => c.id)}
+          entriesForExit={existingEntryNames}
+          onClose={() => setConditionModalOpen(false)}
+          onConfirm={(condition) => { addCondition(condition); setConditionModalOpen(false); }}
+        />
+      </div>
     </div>
   );
 } 

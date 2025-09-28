@@ -1,4 +1,4 @@
-import { Strategy } from "@/pages/DragDropStrategyBuilder";
+import { Strategy, StrategyDefinition, StrategyValidation } from "@/types/strategy";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -28,9 +28,11 @@ export interface PineScriptResponse {
 class StrategyService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
+    const token = await (await import("firebase/auth")).getIdToken((await import("@/lib/firebase")).auth.currentUser!, true).catch(() => null);
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
       ...options,
@@ -109,6 +111,36 @@ class StrategyService {
         strategy: strategy,
         userId: 'anonymous' // TODO: Get from auth context
       }),
+    });
+  }
+
+  // New JSON-first strategy definition methods
+  async createStrategyDefinition(strategy: StrategyDefinition): Promise<StrategyDefinition> {
+    return this.request<StrategyDefinition>('/api/strategies/defs', {
+      method: 'POST',
+      body: JSON.stringify({ strategy }),
+    });
+  }
+
+  async updateStrategyDefinition(id: string, strategy: StrategyDefinition): Promise<StrategyDefinition> {
+    return this.request<StrategyDefinition>(`/api/strategies/defs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ strategy }),
+    });
+  }
+
+  async getStrategyDefinition(id: string): Promise<StrategyDefinition> {
+    return this.request<StrategyDefinition>(`/api/strategies/defs/${id}`);
+  }
+
+  async getStrategyDefinitions(): Promise<StrategyDefinition[]> {
+    return this.request<StrategyDefinition[]>('/api/strategies/defs');
+  }
+
+  async validateStrategyDefinition(strategy: StrategyDefinition): Promise<StrategyValidation> {
+    return this.request<StrategyValidation>('/api/strategies/defs/validate', {
+      method: 'POST',
+      body: JSON.stringify({ strategy }),
     });
   }
 }

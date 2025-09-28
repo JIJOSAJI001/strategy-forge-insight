@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException
-from typing import List, Optional, Dict, Any
+from fastapi import APIRouter, HTTPException, Depends
+from typing import List, Optional, Dict, Any, Literal
 from pydantic import BaseModel, Field
 from bson import ObjectId
 import os
@@ -9,7 +9,9 @@ from datetime import datetime
 
 load_dotenv()
 
-router = APIRouter()
+from auth_file import verify_firebase_token, require_role
+
+router = APIRouter(dependencies=[Depends(verify_firebase_token)])
 
 # Existing models for backward compatibility
 class StrategyBase(BaseModel):
@@ -87,6 +89,248 @@ class PineScriptResponse(BaseModel):
 class ValidationResponse(BaseModel):
     isValid: bool
     errors: List[str]
+
+# =====================
+# New JSON-first Strategy Definition (single source of truth for backtesting)
+# =====================
+
+class IndicatorDef(BaseModel):
+    id: str
+    type: str  # e.g., "RSI", "SMA"
+    params: Dict[str, Any]
+
+
+class ExpressionDef(BaseModel):
+    left: str  # indicator id or literal like "close" if supported by engine
+    operator: str  # e.g., ">", "<", ">=", "<=", "==", "crosses_above", "crosses_below"
+    right: Dict[str, Any]  # {"value": number} or {"indicator": "id"}
+
+
+class ActionDef(BaseModel):
+    side: Optional[Literal["long", "short"]] = None
+    entryName: Optional[str] = None
+    exitFrom: Optional[str] = None
+
+
+class ConditionDef(BaseModel):
+    id: str
+    type: Literal["entry", "exit"]
+    expression: ExpressionDef
+    action: ActionDef
+
+
+class StopTakeDef(BaseModel):
+    type: Literal["percentage", "fixed"]
+    value: float
+
+
+class RiskManagementDef(BaseModel):
+    stopLoss: StopTakeDef
+    takeProfit: StopTakeDef
+    capital: float
+    positionSize: Literal["fixed", "percent_of_equity"]
+    positionValue: float  # amount or percent depending on positionSize
+
+
+class StrategyDefinition(BaseModel):
+    id: Optional[str] = Field(None, alias="_id")
+    name: str
+    description: str
+    ownerId: str
+    visibility: Literal["private", "public"]
+    timeframe: str  # e.g., "1h", "1d"
+    indicators: List[IndicatorDef]
+    conditions: List[ConditionDef]
+    riskManagement: RiskManagementDef
+    pineScriptCode: Optional[str] = None
+    createdAt: Optional[str] = None
+    updatedAt: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
+        json_encoders = {ObjectId: str}
+
+
+class StrategyDefCreateRequest(BaseModel):
+    strategy: StrategyDefinition
+
+
+class StrategyDefResponse(StrategyDefinition):
+    id: str = Field(alias="_id")
+
+    class Config:
+        populate_by_name = True
+        json_encoders = {ObjectId: str}
+
+
+async def _now_iso() -> str:
+    return datetime.utcnow().isoformat()
+
+
+def _strategy_def_collection_name() -> str:
+    # Use existing collection per requirement
+    return "drag_drop_strategies"
+
+
+def _validate_strategy_definition(strategy: StrategyDefinition) -> List[str]:
+    errors: List[str] = []
+
+    if not strategy.name.strip():
+        errors.append("name is required")
+    if not strategy.description.strip():
+        errors.append("description is required")
+    if not strategy.ownerId.strip():
+        errors.append("ownerId is required")
+    if strategy.visibility not in ("private", "public"):
+        errors.append("visibility must be 'private' or 'public'")
+    if not strategy.timeframe.strip():
+        errors.append("timeframe is required")
+
+    indicator_ids = {ind.id for ind in strategy.indicators}
+    if len(indicator_ids) != len(strategy.indicators):
+        errors.append("indicator ids must be unique")
+
+    for cond in strategy.conditions:
+        if cond.type not in ("entry", "exit"):
+            errors.append(f"condition {cond.id} type must be 'entry' or 'exit'")
+        # expression.left should be an indicator id or supported literal; we enforce indicator id here
+        if cond.expression.right is None:
+            errors.append(f"condition {cond.id} expression.right is required")
+        # right must be either {value} or {indicator}
+        right_keys = set(cond.expression.right.keys())
+        if not ("value" in right_keys) and not ("indicator" in right_keys):
+            errors.append(f"condition {cond.id} right must include 'value' or 'indicator'")
+        if "indicator" in right_keys and cond.expression.right.get("indicator") not in indicator_ids:
+            errors.append(f"condition {cond.id} right.indicator must reference existing indicator id")
+        # left: indicator id must exist (if using id)
+        if cond.expression.left in indicator_ids:
+            pass
+        else:
+            # allow literals like 'close' or 'open' optionally; do not hard fail
+            allowed_literals = {"open", "high", "low", "close", "volume"}
+            if cond.expression.left not in allowed_literals:
+                errors.append(f"condition {cond.id} left must be indicator id or one of {allowed_literals}")
+
+        # action validation
+        if cond.type == "entry":
+            if cond.action.side is None or cond.action.entryName is None:
+                errors.append(f"condition {cond.id} entry must specify side and entryName")
+            if cond.action.exitFrom is not None:
+                errors.append(f"condition {cond.id} entry must not set exitFrom")
+        if cond.type == "exit":
+            if not cond.action.exitFrom:
+                errors.append(f"condition {cond.id} exit must specify exitFrom")
+            if cond.action.side is not None or cond.action.entryName is not None:
+                errors.append(f"condition {cond.id} exit must not set side or entryName")
+
+    # risk
+    if strategy.riskManagement.stopLoss.value <= 0:
+        errors.append("stopLoss.value must be > 0")
+    if strategy.riskManagement.takeProfit.value <= 0:
+        errors.append("takeProfit.value must be > 0")
+    if strategy.riskManagement.capital <= 0:
+        errors.append("capital must be > 0")
+    if strategy.riskManagement.positionSize == "fixed" and strategy.riskManagement.positionValue <= 0:
+        errors.append("positionValue must be > 0 when positionSize is fixed")
+    if strategy.riskManagement.positionSize == "percent_of_equity":
+        if strategy.riskManagement.positionValue <= 0 or strategy.riskManagement.positionValue > 100:
+            errors.append("positionValue must be in (0, 100] when positionSize is percent_of_equity")
+
+    return errors
+
+
+@router.post("/strategies/defs", response_model=StrategyDefResponse)
+async def create_strategy_definition(request: StrategyDefCreateRequest):
+    try:
+        strategy = request.strategy
+        # Validate
+        errors = _validate_strategy_definition(strategy)
+        if errors:
+            raise HTTPException(status_code=400, detail={"errors": errors})
+
+        collection, client = await get_mongodb_collection(_strategy_def_collection_name())
+        now = await _now_iso()
+        doc: Dict[str, Any] = strategy.dict(by_alias=True)
+        doc.pop("_id", None)
+        doc["createdAt"] = now
+        doc["updatedAt"] = now
+
+        result = await collection.insert_one(doc)
+        doc["_id"] = str(result.inserted_id)
+        client.close()
+        return StrategyDefResponse(**doc)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create strategy definition: {str(e)}")
+
+
+@router.get("/strategies/defs/{strategy_id}", response_model=StrategyDefResponse)
+async def get_strategy_definition(strategy_id: str):
+    try:
+        collection, client = await get_mongodb_collection(_strategy_def_collection_name())
+        doc = await collection.find_one({"_id": ObjectId(strategy_id)})
+        if not doc:
+            raise HTTPException(status_code=404, detail="Strategy definition not found")
+        doc["_id"] = str(doc["_id"])
+        client.close()
+        return StrategyDefResponse(**doc)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch strategy definition: {str(e)}")
+
+
+@router.get("/strategies/defs", response_model=List[StrategyDefResponse])
+async def list_strategy_definitions():
+    try:
+        collection, client = await get_mongodb_collection(_strategy_def_collection_name())
+        strategies: List[StrategyDefResponse] = []
+        async for doc in collection.find():
+            doc["_id"] = str(doc["_id"])
+            strategies.append(StrategyDefResponse(**doc))
+        client.close()
+        return strategies
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list strategy definitions: {str(e)}")
+
+
+@router.put("/strategies/defs/{strategy_id}", response_model=StrategyDefResponse)
+async def update_strategy_definition(strategy_id: str, request: StrategyDefCreateRequest):
+    try:
+        strategy = request.strategy
+        errors = _validate_strategy_definition(strategy)
+        if errors:
+            raise HTTPException(status_code=400, detail={"errors": errors})
+
+        collection, client = await get_mongodb_collection(_strategy_def_collection_name())
+        now = await _now_iso()
+        doc: Dict[str, Any] = strategy.dict(by_alias=True)
+        doc.pop("_id", None)
+        doc["updatedAt"] = now
+
+        result = await collection.update_one({"_id": ObjectId(strategy_id)}, {"$set": doc})
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Strategy definition not found")
+
+        saved = await collection.find_one({"_id": ObjectId(strategy_id)})
+        saved["_id"] = str(saved["_id"])
+        client.close()
+        return StrategyDefResponse(**saved)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update strategy definition: {str(e)}")
+
+
+@router.post("/strategies/defs/validate", response_model=ValidationResponse)
+async def validate_strategy_definition(request: StrategyDefCreateRequest):
+    try:
+        strategy = request.strategy
+        errors = _validate_strategy_definition(strategy)
+        return ValidationResponse(isValid=len(errors) == 0, errors=errors)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to validate strategy definition: {str(e)}")
 
 # MongoDB connection helper
 async def get_mongodb_collection(collection_name: str):

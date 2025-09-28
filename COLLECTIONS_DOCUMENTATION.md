@@ -28,36 +28,49 @@ This document provides a comprehensive overview of all database collections used
 
 ### 2. drag_drop_strategies
 **Status**: ✅ Created  
-**Description**: Stores drag-and-drop strategy builder configurations
+**Description**: Stores drag-and-drop strategy builder configurations (JSON-first strategy definition for backtesting)
 
 | Field | Type | Description |
 |-------|------|-------------|
 | _id | ObjectId | Unique identifier |
 | name | string | Strategy name |
-| description | string | Strategy description |
-| conditions | array[StrategyCondition] | Trading conditions |
-| riskManagement | RiskManagement | Risk management settings |
-| created_at | datetime | Creation timestamp |
-| updated_at | datetime | Last update timestamp |
-| user_id | string | Creator user ID |
-| is_public | boolean | Public visibility flag |
-| performance_metrics | object | Calculated performance metrics |
+| description | string | Short description |
+| ownerId | string | Creator user ID |
+| visibility | string | "private" or "public" |
+| timeframe | string | Timeframe (e.g., 1h, 1d) |
+| indicators | array[Indicator] | Indicators used |
+| conditions | array[Condition] | Entry/exit rules |
+| riskManagement | RiskManagement | Risk settings |
+| pineScriptCode | string (optional) | Optional TradingView export |
+| createdAt | datetime | Creation timestamp |
+| updatedAt | datetime | Last update timestamp |
 
-**StrategyCondition Structure:**
+**Indicator Structure:**
 | Field | Type | Description |
 |-------|------|-------------|
-| parameter | string | Parameter name |
-| operator | string | Comparison operator |
-| value | any | Parameter value |
-| logic | string | Logic operator ('AND' or 'OR') |
+| id | string | Unique reference id |
+| type | string | Indicator type (RSI, SMA, etc.) |
+| params | object | Key-value parameters |
+
+**Condition Structure:**
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Unique condition id |
+| type | string | "entry" or "exit" |
+| expression | object | `{ left, operator, right }` |
+| action | object | Entry: `{ side, entryName }`, Exit: `{ exitFrom }` |
+
+`expression.left` can be an indicator id or a literal like `open`, `high`, `low`, `close`, `volume`.  
+`expression.right` must be either `{ value: number }` or `{ indicator: string }`.
 
 **RiskManagement Structure:**
 | Field | Type | Description |
 |-------|------|-------------|
-| stopLoss | number | Stop loss percentage |
-| takeProfit | number | Take profit percentage |
-| positionSize | number | Position size |
-| riskPerTrade | number | Risk per trade percentage |
+| stopLoss | object | `{ type: 'percentage'|'fixed', value: number }` |
+| takeProfit | object | `{ type: 'percentage'|'fixed', value: number }` |
+| capital | number | Starting balance |
+| positionSize | string | `fixed` or `percent_of_equity` |
+| positionValue | number | Amount or percent |
 
 ### 3. historical_data
 **Status**: ✅ Created  
@@ -82,7 +95,53 @@ This document provides a comprehensive overview of all database collections used
 | close | number | Closing price |
 | volume | number | Trading volume |
 
-### 4. backtests
+### 4. strategy_definitions
+**Status**: ✅ Created  
+**Description**: JSON-first strategy definitions used for backtesting (single source of truth)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| _id | ObjectId | Unique identifier |
+| name | string | Strategy name |
+| description | string | Short description |
+| ownerId | string | Creator user ID |
+| visibility | string | "private" or "public" |
+| timeframe | string | Timeframe (e.g., 1h, 1d) |
+| indicators | array[Indicator] | Indicators used |
+| conditions | array[Condition] | Entry/exit rules |
+| riskManagement | RiskManagement | Risk settings |
+| pineScriptCode | string (optional) | Optional TradingView export |
+| createdAt | datetime | Creation timestamp |
+| updatedAt | datetime | Last update timestamp |
+
+**Indicator Structure:**
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Unique reference id |
+| type | string | Indicator type (RSI, SMA, etc.) |
+| params | object | Key-value parameters |
+
+**Condition Structure:**
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Unique condition id |
+| type | string | "entry" or "exit" |
+| expression | object | `{ left, operator, right }` |
+| action | object | Entry: `{ side, entryName }`, Exit: `{ exitFrom }` |
+
+`expression.left` can be an indicator id or a literal like `open`, `high`, `low`, `close`, `volume`.  
+`expression.right` must be either `{ value: number }` or `{ indicator: string }`.
+
+**RiskManagement Structure:**
+| Field | Type | Description |
+|-------|------|-------------|
+| stopLoss | object | `{ type: 'percentage'|'fixed', value: number }` |
+| takeProfit | object | `{ type: 'percentage'|'fixed', value: number }` |
+| capital | number | Starting balance |
+| positionSize | string | `fixed` or `percent_of_equity` |
+| positionValue | number | Amount or percent |
+
+### 5. backtests
 **Status**: ✅ Created  
 **Description**: Stores backtest execution results
 

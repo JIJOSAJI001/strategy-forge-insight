@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://strategy-forge/strategy-definition.schema.json",
+  "title": "StrategyDefinition",
+  "type": "object",
+  "required": [
+    "name",
+    "description",
+    "ownerId",
+    "visibility",
+    "timeframe",
+    "indicators",
+    "conditions",
+    "riskManagement"
+  ],
+  "properties": {
+    "_id": { "type": "string" },
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "ownerId": { "type": "string" },
+    "visibility": { "type": "string", "enum": ["private", "public"] },
+    "timeframe": { "type": "string" },
+    "indicators": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "params"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string" },
+          "params": { "type": "object", "additionalProperties": true }
+        },
+        "additionalProperties": false
+      }
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "expression", "action"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string", "enum": ["entry", "exit"] },
+          "expression": {
+            "type": "object",
+            "required": ["left", "operator", "right"],
+            "properties": {
+              "left": { "type": "string" },
+              "operator": { "type": "string" },
+              "right": {
+                "type": "object",
+                "oneOf": [
+                  { "required": ["value"], "properties": { "value": { "type": "number" } } },
+                  { "required": ["indicator"], "properties": { "indicator": { "type": "string" } } }
+                ],
+                "additionalProperties": true
+              }
+            },
+            "additionalProperties": false
+          },
+          "action": {
+            "type": "object",
+            "properties": {
+              "side": { "type": "string", "enum": ["long", "short"] },
+              "entryName": { "type": "string" },
+              "exitFrom": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "riskManagement": {
+      "type": "object",
+      "required": ["stopLoss", "takeProfit", "capital", "positionSize", "positionValue"],
+      "properties": {
+        "stopLoss": {
+          "type": "object",
+          "required": ["type", "value"],
+          "properties": {
+            "type": { "type": "string", "enum": ["percentage", "fixed"] },
+            "value": { "type": "number", "exclusiveMinimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "takeProfit": {
+          "type": "object",
+          "required": ["type", "value"],
+          "properties": {
+            "type": { "type": "string", "enum": ["percentage", "fixed"] },
+            "value": { "type": "number", "exclusiveMinimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "capital": { "type": "number", "exclusiveMinimum": 0 },
+        "positionSize": { "type": "string", "enum": ["fixed", "percent_of_equity"] },
+        "positionValue": { "type": "number", "exclusiveMinimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "pineScriptCode": { "type": ["string", "null"] },
+    "createdAt": { "type": ["string", "null"] },
+    "updatedAt": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
+}

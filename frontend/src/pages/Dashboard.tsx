@@ -121,7 +121,7 @@ const quickActions = [
     description: "Build a new trading strategy",
     icon: Plus,
     variant: 'primary' as const,
-    onClick: () => window.location.href = '/strategy-builder',
+    onClick: () => window.location.href = '/drag-drop-strategy-builder',
   },
   {
     title: "Run Backtest",
@@ -184,7 +184,7 @@ export default function Dashboard() {
           <Button 
             size="sm" 
             className="bg-[#3B82F6] hover:bg-[#2563EB] text-white"
-            onClick={() => navigate('/strategy-builder')}
+            onClick={() => navigate('/drag-drop-strategy-builder')}
           >
             <Plus className="h-4 w-4 mr-2" />
             Create Strategy

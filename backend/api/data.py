@@ -1,10 +1,10 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import List, Optional
 import os
 from datetime import datetime
 
-from db.mongo import MongoDB
 from services.data_manager import DATA_DIR, get_data
+from auth_file import require_role
 
 
 router = APIRouter(prefix="/data", tags=["data"])
@@ -32,6 +32,7 @@ async def force_refresh(
     start_date: str = Query(..., description="ISO date e.g. 2020-01-01"),
     end_date: str = Query(..., description="ISO date e.g. 2024-01-01"),
     timeframe: str = Query("1d", description="1d, 1h, 30m, 15m"),
+    _: dict = Depends(require_role("admin")),
 ):
     """
     Force fetch data from remote API and refresh MongoDB cache.

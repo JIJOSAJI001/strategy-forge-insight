@@ -16,7 +16,7 @@ export const AuthDialog: React.FC<{ trigger: React.ReactNode }> = ({ trigger }) 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
-  const { user } = useAuth();
+  const { user, login, loginWithGoogle } = useAuth();
   const [newPassword, setNewPassword] = useState("");
   const [settingsError, setSettingsError] = useState("");
   const [settingsSuccess, setSettingsSuccess] = useState("");
@@ -30,7 +30,8 @@ export const AuthDialog: React.FC<{ trigger: React.ReactNode }> = ({ trigger }) 
     setLoading(true);
     setError("");
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await login(email, password);
+      // Login function handles role-based redirect automatically
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -92,8 +93,8 @@ export const AuthDialog: React.FC<{ trigger: React.ReactNode }> = ({ trigger }) 
     setLoading(true);
     setError("");
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await loginWithGoogle();
+      // Google login function handles role-based redirect automatically
     } catch (err: any) {
       setError(err.message);
     } finally {

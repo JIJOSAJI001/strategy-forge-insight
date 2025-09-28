@@ -29,32 +29,51 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
 
-const navigation = [
-  { title: "Dashboard", url: "/", icon: Home },
-  { title: "Strategy Library", url: "/strategies", icon: Library },
-  { title: "Backtesting", url: "/backtesting", icon: BarChart3 },
-  { title: "Portfolio", url: "/portfolio", icon: Target },
-  { title: "AI Assistant", url: "/ai-assistant", icon: Sparkles },
-  { title: "Strategy Builder", url: "/strategy-builder", icon: Bot },
-  { title: "Drag & Drop Builder", url: "/drag-drop-strategy-builder", icon: MousePointer },
-  { title: "Paper Trading", url: "/paper-trading", icon: PlayCircle },
-];
+const getNavigation = (role: string | null) => {
+  const baseNavigation = [
+    { title: "Dashboard", url: role === "admin" ? "/admin-dashboard" : "/dashboard", icon: Home },
+    { title: "Strategy Library", url: "/strategies", icon: Library },
+    { title: "Backtesting", url: "/backtesting", icon: BarChart3 },
+    { title: "Portfolio", url: "/portfolio", icon: Target },
+    { title: "AI Assistant", url: "/ai-assistant", icon: Sparkles },
+    { title: "Drag & Drop Builder", url: "/drag-drop-strategy-builder", icon: MousePointer },
+    { title: "Paper Trading", url: "/paper-trading", icon: PlayCircle },
+  ];
+  
+  return baseNavigation;
+};
 
-const tools = [
-  { title: "Market Analysis", url: "/market-analysis", icon: TrendingUp },
-  { title: "Optimization", url: "/optimization", icon: Zap },
-  { title: "Scenario Tester", url: "/scenario-tester", icon: TestTube },
-  { title: "Reports", url: "/reports", icon: FileText },
-  { title: "Export", url: "/export", icon: Download },
-  { title: "Profile", url: "/profile", icon: User },
-  { title: "Settings", url: "/settings", icon: Settings },
-];
+const getTools = (role: string | null) => {
+  const baseTools = [
+    { title: "Market Analysis", url: "/market-analysis", icon: TrendingUp },
+    { title: "Optimization", url: "/optimization", icon: Zap },
+    { title: "Scenario Tester", url: "/scenario-tester", icon: TestTube },
+    { title: "Reports", url: "/reports", icon: FileText },
+    { title: "Export", url: "/export", icon: Download },
+    { title: "Profile", url: "/profile", icon: User },
+    { title: "Settings", url: "/settings", icon: Settings },
+  ];
+  
+  if (role === "admin") {
+    baseTools.unshift(
+      { title: "User Management", url: "/user-management", icon: User },
+      { title: "Data Management", url: "/data-management", icon: TrendingUp }
+    );
+  }
+  
+  return baseTools;
+};
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { role } = useAuth();
+
+  const navigation = getNavigation(role);
+  const tools = getTools(role);
 
   const isActive = (path: string) => location.pathname === path;
   const getNavClassName = (path: string) =>

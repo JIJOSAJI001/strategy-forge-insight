@@ -1,0 +1,20 @@
+{
+  "users": [
+    {
+      "uid": "MIBjRMNkuUZ3m431UyBclGnpuWi1",
+      "email": "admin@gmail.com",
+      "displayName": null,
+      "role": "admin",
+      "createdAt": "2025-09-28T04:32:34.604014+00:00",
+      "lastLogin": "2025-09-28T04:36:34.189275+00:00"
+    },
+    {
+      "uid": "cawe21dszvd1plDz4mRn2T0cazf2",
+      "email": "jijosaji1003@gmail.com",
+      "displayName": "dhfbghid",
+      "role": "retail",
+      "createdAt": "2025-09-28T04:37:07.071506+00:00",
+      "lastLogin": "2025-09-28T04:37:07.071506+00:00"
+    }
+  ]
+}

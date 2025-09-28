@@ -5,8 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AdminRoute } from "@/components/auth/AdminRoute";
 import Dashboard from "./pages/Dashboard";
-import StrategyBuilder from "./pages/StrategyBuilder";
+import AdminDashboard from "./pages/AdminDashboard";
 import DragDropStrategyBuilder from "./pages/DragDropStrategyBuilder";
 import Backtesting from "./pages/Backtesting";
 import StrategyLibrary from "./pages/StrategyLibrary";
@@ -21,16 +22,16 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <ThemeProvider>
-    <AuthProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
             <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/admin-dashboard" element={<AdminRoute><AppLayout><AdminDashboard /></AppLayout></AdminRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-              <Route path="/strategy-builder" element={<ProtectedRoute><AppLayout><StrategyBuilder /></AppLayout></ProtectedRoute>} />
               <Route path="/drag-drop-strategy-builder" element={<ProtectedRoute><AppLayout><DragDropStrategyBuilder /></AppLayout></ProtectedRoute>} />
               <Route path="/backtesting" element={<ProtectedRoute><AppLayout><Backtesting /></AppLayout></ProtectedRoute>} />
               <Route path="/strategies" element={<ProtectedRoute><AppLayout><StrategyLibrary /></AppLayout></ProtectedRoute>} />
@@ -47,10 +48,10 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </AuthProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
   </ThemeProvider>
 );
 

@@ -1,0 +1,36 @@
+warning: in the working copy of 'COLLECTIONS_DOCUMENTATION.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/.env', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/api/data.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/api/strategy.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/main.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/App.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/auth/AuthDialog.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/layout/AppSidebar.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/contexts/AuthContext.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/pages/Backtesting.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/pages/Dashboard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/pages/DragDropStrategyBuilder.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/services/strategy.service.ts', LF will be replaced by CRLF the next time Git touches it
+M	COLLECTIONS_DOCUMENTATION.md
+M	backend/.env
+M	backend/README.md
+M	backend/__pycache__/main.cpython-311.pyc
+M	backend/api/__init__.py
+M	backend/api/__pycache__/__init__.cpython-311.pyc
+M	backend/api/__pycache__/backtest.cpython-311.pyc
+M	backend/api/__pycache__/data.cpython-311.pyc
+M	backend/api/__pycache__/strategy.cpython-311.pyc
+M	backend/api/data.py
+M	backend/api/strategy.py
+M	backend/main.py
+M	frontend/src/App.tsx
+M	frontend/src/components/auth/AuthDialog.tsx
+M	frontend/src/components/layout/AppSidebar.tsx
+M	frontend/src/contexts/AuthContext.tsx
+M	frontend/src/pages/Backtesting.tsx
+M	frontend/src/pages/Dashboard.tsx
+M	frontend/src/pages/DragDropStrategyBuilder.tsx
+M	frontend/src/pages/Landing.tsx
+D	frontend/src/pages/StrategyBuilder.tsx
+M	frontend/src/services/strategy.service.ts

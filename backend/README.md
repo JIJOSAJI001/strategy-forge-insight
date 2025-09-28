@@ -31,6 +31,23 @@ A FastAPI backend for the Strategy Forge application that connects to MongoDB At
 - `GET /api/strategies` - Get all strategies
 - `GET /api/strategies/{strategy_id}` - Get a specific strategy
 
+### Drag-Drop Strategies (legacy builder)
+
+- `GET /api/strategies/drag-drop` - List drag-drop strategies
+- `GET /api/strategies/drag-drop/{id}` - Get a drag-drop strategy
+- `POST /api/strategies` - Create drag-drop strategy
+- `PUT /api/strategies/{id}` - Update drag-drop strategy
+- `POST /api/strategies/generate-pine-script` - Generate Pine Script from drag-drop strategy
+- `POST /api/strategies/validate` - Validate drag-drop strategy
+
+### JSON-first Strategy Definitions (Backtesting source of truth)
+
+- `GET /api/strategies/defs` - List strategy definitions
+- `GET /api/strategies/defs/{id}` - Get a strategy definition
+- `POST /api/strategies/defs` - Create a strategy definition
+- `PUT /api/strategies/defs/{id}` - Update a strategy definition
+- `POST /api/strategies/defs/validate` - Validate a strategy definition
+
 ### Backtesting Data Management
 
 - Place pre-downloaded OHLCV files in `Backend/data/` as CSV or Parquet. Supported names:

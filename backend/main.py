@@ -3,8 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.strategy import router as strategy_router
 from api.data import router as data_router
 from api.backtest import router as backtest_router
+from api.users import router as users_router
+from auth_file import initialize_firebase
 import uvicorn
-from db.mongo import MongoDB
 
 app = FastAPI(
     title="Strategy Forge API",
@@ -30,21 +31,22 @@ app.add_middleware(
 app.include_router(strategy_router, prefix="/api", tags=["strategies"])
 app.include_router(data_router, prefix="/api")
 app.include_router(backtest_router, prefix="/api")
+app.include_router(users_router, prefix="/api")
 
 # MongoDB connection will be handled directly in the API routes
 
 @app.on_event("startup")
 async def on_startup():
     try:
-        await MongoDB.connect_to_mongo()
-    except Exception:
-        # Allow API to start; endpoints relying on DB will raise appropriately
-        pass
+        initialize_firebase()
+        print("✅ Firebase initialized")
+    except Exception as e:
+        print(f"❌ Firebase initialization failed: {e}")
 
 
 @app.on_event("shutdown")
 async def on_shutdown():
-    await MongoDB.close_mongo_connection()
+    print("✅ API server shutdown")
 
 
 @app.get("/")

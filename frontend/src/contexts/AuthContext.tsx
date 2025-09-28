@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, onAuthStateChanged, signOut, reload } from "firebase/auth";
+import { User, onAuthStateChanged, signOut, reload, getIdToken, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { useNavigate } from "react-router-dom";
+
+type Role = "admin" | "retail";
 
 interface AuthContextType {
   user: User | null;
@@ -8,6 +11,9 @@ interface AuthContextType {
   logout: () => Promise<void>;
   displayName: string | null;
   refreshUser: () => Promise<void>;
+  role: Role | null;
+  login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,17 +22,89 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [displayName, setDisplayName] = useState<string | null>(null);
+  const [role, setRole] = useState<Role | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [redirected, setRedirected] = useState(false);
+  const navigate = useNavigate();
+
+  // Centralized redirect function
+  const redirectBasedOnRole = (userRole: Role) => {
+    if (redirected) {
+      console.log("Already redirected, skipping");
+      return;
+    }
+    console.log("Redirecting based on role:", userRole);
+    if (userRole === "admin") {
+      navigate("/admin-dashboard", { replace: true });
+    } else {
+      navigate("/dashboard", { replace: true });
+    }
+    setRedirected(true);
+  };
+
+  // Improved fetchUserRole with retry logic
+  const fetchUserRole = async (firebaseUser: User) => {
+    try {
+      const token = await firebaseUser.getIdToken(true);
+      const apiBase = (import.meta as any).env.VITE_API_URL || "http://localhost:8000";
+      const res = await fetch(`${apiBase}/api/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.status === 401) {
+        console.log("401 error, retrying with fresh token...");
+        // Retry once with fresh token
+        const freshToken = await firebaseUser.getIdToken(true);
+        const retryRes = await fetch(`${apiBase}/api/users/me`, {
+          headers: { Authorization: `Bearer ${freshToken}` },
+        });
+        if (retryRes.ok) {
+          return await retryRes.json();
+        }
+        throw new Error(`Backend request failed: ${retryRes.status}`);
+      }
+
+      if (!res.ok) {
+        throw new Error(`Backend request failed: ${res.status}`);
+      }
+
+      return await res.json();
+    } catch (err) {
+      console.error("Failed to fetch user role:", err);
+      return null;
+    }
+  };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       setDisplayName(firebaseUser?.displayName ?? null);
+      
+      // Skip if we're in the middle of a manual login
+      if (firebaseUser && !isLoggingIn) {
+        console.log("Auth state changed, fetching role...");
+        const userData = await fetchUserRole(firebaseUser);
+        if (userData) {
+          setRole(userData.role as Role);
+          // Only redirect if we're on the landing page (page refresh scenario)
+          const currentPath = window.location.pathname;
+          if (currentPath === "/") {
+            redirectBasedOnRole(userData.role as Role);
+          }
+        } else {
+          setRole(null);
+        }
+      } else if (!firebaseUser) {
+        setRole(null);
+        setRedirected(false); // Reset redirect flag on logout
+      }
       setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [isLoggingIn, navigate]);
 
   const logout = async () => {
+    setRedirected(false);
     await signOut(auth);
   };
 
@@ -36,8 +114,75 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const login = async (email: string, password: string) => {
+    try {
+      setIsLoggingIn(true);
+      setRedirected(false);
+      setLoading(true);
+      console.log("Starting manual login process...");
+      
+      // 1. Sign in with Firebase
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log("Firebase login successful");
+      
+      // 2. Update user state
+      setUser(userCredential.user);
+      setDisplayName(userCredential.user.displayName);
+      
+      // 3. Fetch user role from backend
+      const userData = await fetchUserRole(userCredential.user);
+      if (userData) {
+        setRole(userData.role as Role);
+        redirectBasedOnRole(userData.role as Role);
+      } else {
+        throw new Error("Failed to fetch user role");
+      }
+      
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error;
+    } finally {
+      setIsLoggingIn(false);
+      setLoading(false);
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    try {
+      setIsLoggingIn(true);
+      setRedirected(false);
+      setLoading(true);
+      console.log("Starting Google login process...");
+      
+      // 1. Sign in with Google
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      console.log("Google login successful");
+      
+      // 2. Update user state
+      setUser(userCredential.user);
+      setDisplayName(userCredential.user.displayName);
+      
+      // 3. Fetch user role from backend
+      const userData = await fetchUserRole(userCredential.user);
+      if (userData) {
+        setRole(userData.role as Role);
+        redirectBasedOnRole(userData.role as Role);
+      } else {
+        throw new Error("Failed to fetch user role");
+      }
+      
+    } catch (error) {
+      console.error("Google login failed:", error);
+      throw error;
+    } finally {
+      setIsLoggingIn(false);
+      setLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, logout, displayName, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, logout, displayName, refreshUser, role, login, loginWithGoogle }}>
       {children}
     </AuthContext.Provider>
   );

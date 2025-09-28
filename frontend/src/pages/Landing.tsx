@@ -8,14 +8,20 @@ import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Footer } from "@/components/landing/Footer";
 
 const Landing = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, role } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && user) {
-      navigate("/dashboard");
+    if (!loading && user && role) {
+      // Role-based redirect is now handled in AuthContext
+      // This effect is just for safety
+      if (role === "admin") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, role, navigate]);
 
   if (loading) {
     return (

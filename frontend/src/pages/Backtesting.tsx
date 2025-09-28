@@ -73,7 +73,7 @@ export default function Backtesting() {
     downloadJSON(`backtest_${data?.header.symbol ?? "result"}.json`, data);
   };
   const handleRerun = () => { if (paramsRef.current) refetch(); };
-  const handleNew = () => { window.location.href = "/strategy-builder"; };
+  const handleNew = () => { window.location.href = "/drag-drop-strategy-builder"; };
 
   const handleImportPine = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

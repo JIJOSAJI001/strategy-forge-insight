@@ -1,0 +1,31 @@
+{
+  "users": [
+    {
+      "firebaseUid": "MIBjRMNkuUZ3m431UyBclGnpuWi1",
+      "uid": "MIBjRMNkuUZ3m431UyBclGnpuWi1",
+      "email": "admin@gmail.com",
+      "displayName": null,
+      "role": "admin",
+      "createdAt": "2025-09-28T05:08:51.093725+00:00",
+      "lastLogin": "2025-09-28T06:50:42.126970+00:00"
+    },
+    {
+      "firebaseUid": "G6TgYbAWz9fTerPj1haICY411iw1",
+      "uid": "G6TgYbAWz9fTerPj1haICY411iw1",
+      "email": "jijosaji2001@gmail.com",
+      "displayName": "Jijo Saji",
+      "role": "retail",
+      "createdAt": "2025-09-28T05:12:06.739182+00:00",
+      "lastLogin": "2025-09-28T06:50:19.123487+00:00"
+    },
+    {
+      "firebaseUid": "Dv4AiAxnfDMa1oUYAWrwx9iv6xD3",
+      "uid": "Dv4AiAxnfDMa1oUYAWrwx9iv6xD3",
+      "email": "jijosaji003@gmail.com",
+      "displayName": "Jijo Saji",
+      "role": "retail",
+      "createdAt": "2025-09-28T06:07:17.127386+00:00",
+      "lastLogin": "2025-09-28T06:07:17.485175+00:00"
+    }
+  ]
+}
