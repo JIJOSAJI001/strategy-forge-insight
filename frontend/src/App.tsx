@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AdminRoute } from "@/components/auth/AdminRoute";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import UserManagement from "./pages/UserManagement";
 import DragDropStrategyBuilder from "./pages/DragDropStrategyBuilder";
 import Backtesting from "./pages/Backtesting";
 import StrategyLibrary from "./pages/StrategyLibrary";
@@ -30,7 +31,8 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/" element={<Landing />} />
-              <Route path="/admin-dashboard" element={<AdminRoute><AppLayout><AdminDashboard /></AppLayout></AdminRoute>} />
+              <Route path="/admin-dashboard" element={<AdminRoute><AppLayout hideSidebar hideTopNavLinks><AdminDashboard /></AppLayout></AdminRoute>} />
+              <Route path="/user-management" element={<AdminRoute><AppLayout hideSidebar hideTopNavLinks><UserManagement /></AppLayout></AdminRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
               <Route path="/drag-drop-strategy-builder" element={<ProtectedRoute><AppLayout><DragDropStrategyBuilder /></AppLayout></ProtectedRoute>} />
               <Route path="/backtesting" element={<ProtectedRoute><AppLayout><Backtesting /></AppLayout></ProtectedRoute>} />

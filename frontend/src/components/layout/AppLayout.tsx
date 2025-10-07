@@ -10,21 +10,25 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface AppLayoutProps {
   children: React.ReactNode;
+  hideSidebar?: boolean;
+  hideTopNavLinks?: boolean;
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout({ children, hideSidebar, hideTopNavLinks }: AppLayoutProps) {
   const { user, logout, loading, displayName } = useAuth();
   const navigate = useNavigate();
 
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        <AppSidebar />
+        {!hideSidebar && <AppSidebar />}
         <div className="flex flex-col flex-1">
           {/* Dark Navy Navigation Bar */}
           <header className="h-16 bg-[#111827] border-b border-[#374151] flex items-center justify-between px-6 shadow-lg">
             <div className="flex items-center gap-4">
-              <SidebarTrigger className="text-[#9CA3AF] hover:text-[#F9FAFB] transition-colors" />
+              {!hideSidebar && (
+                <SidebarTrigger className="text-[#9CA3AF] hover:text-[#F9FAFB] transition-colors" />
+              )}
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-gradient-to-br from-[#3B82F6] to-[#1D4ED8] rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">G</span>
@@ -34,44 +38,46 @@ export function AppLayout({ children }: AppLayoutProps) {
             </div>
             
             {/* Navigation Links */}
-            <nav className="hidden md:flex items-center gap-6">
-              <Button 
-                variant="ghost" 
-                className="text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151] font-medium"
-                onClick={() => navigate('/')}
-              >
-                Dashboard
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151] font-medium"
-                onClick={() => navigate('/strategies')}
-              >
-                Strategy Library
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151] font-medium"
-                onClick={() => navigate('/backtesting')}
-              >
-                Backtesting
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151] font-medium"
-                onClick={() => navigate('/portfolio')}
-              >
-                Portfolio
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="text-[#3B82F6] hover:text-[#60A5FA] hover:bg-[#374151] font-medium"
-                onClick={() => navigate('/ai-assistant')}
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                AI Assistant
-              </Button>
-            </nav>
+            {!hideTopNavLinks && (
+              <nav className="hidden md:flex items-center gap-6">
+                <Button 
+                  variant="ghost" 
+                  className="text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151] font-medium"
+                  onClick={() => navigate('/')}
+                >
+                  Dashboard
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151] font-medium"
+                  onClick={() => navigate('/strategies')}
+                >
+                  Strategy Library
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151] font-medium"
+                  onClick={() => navigate('/backtesting')}
+                >
+                  Backtesting
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151] font-medium"
+                  onClick={() => navigate('/portfolio')}
+                >
+                  Portfolio
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="text-[#3B82F6] hover:text-[#60A5FA] hover:bg-[#374151] font-medium"
+                  onClick={() => navigate('/ai-assistant')}
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  AI Assistant
+                </Button>
+              </nav>
+            )}
             
             <div className="flex items-center gap-3">
               <ThemeToggle />
