@@ -7,7 +7,7 @@
       "displayName": null,
       "role": "admin",
       "createdAt": "2025-09-28T05:08:51.093725+00:00",
-      "lastLogin": "2025-10-07T05:55:37.134968+00:00"
+      "lastLogin": "2025-10-08T15:45:23.071501+00:00"
     },
     {
       "firebaseUid": "G6TgYbAWz9fTerPj1haICY411iw1",
@@ -16,7 +16,7 @@
       "displayName": "Jijo Saji",
       "role": "retail",
       "createdAt": "2025-09-28T05:12:06.739182+00:00",
-      "lastLogin": "2025-10-06T17:30:15.854042+00:00"
+      "lastLogin": "2025-10-08T09:29:15.789902+00:00"
     },
     {
       "firebaseUid": "Dv4AiAxnfDMa1oUYAWrwx9iv6xD3",
@@ -25,7 +25,7 @@
       "displayName": "Jijo Saji",
       "role": "retail",
       "createdAt": "2025-09-28T06:07:17.127386+00:00",
-      "lastLogin": "2025-10-06T17:53:00.937163+00:00",
+      "lastLogin": "2025-10-08T10:44:25.343356+00:00",
       "active": true
     },
     {
@@ -35,7 +35,7 @@
       "displayName": "Akhilesh",
       "role": "retail",
       "createdAt": "2025-10-06T17:49:28.375082+00:00",
-      "lastLogin": "2025-10-06T17:49:53.027077+00:00",
+      "lastLogin": "2025-10-08T10:43:15.363334+00:00",
       "active": true,
       "permissions": {}
     }

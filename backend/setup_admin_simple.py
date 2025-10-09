@@ -1,79 +1,35 @@
 #!/usr/bin/env python3
 """
-Simple Admin Setup Without MongoDB
-This creates a mock user database for testing
+Simple Admin Setup Script (DEPRECATED)
+
+⚠️  DEPRECATION NOTICE:
+This script has been replaced by the unified setup system.
+
+Please use instead:
+    python unified_setup.py mock
+
+Or import and use the new modules:
+    from core.mock_setup import setup_admin_mock
 """
 
-import os
-import json
-import firebase_admin
-from firebase_admin import credentials, auth as fb_auth
-
-# Set environment variables
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'backend/firebase-service-account.json'
-os.environ['FIREBASE_PROJECT_ID'] = 'microproject2-7ac7e'
+import warnings
+from core.mock_setup import setup_admin_mock
 
 def setup_admin_without_mongodb():
-    print("🔥 Setting up Admin User (No MongoDB)")
-    print("=" * 50)
+    """Deprecated function - redirects to new unified setup."""
+    warnings.warn(
+        "setup_admin_simple.py is deprecated. Use 'python unified_setup.py mock' instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
     
-    try:
-        # Initialize Firebase
-        if not firebase_admin._apps:
-            cred = credentials.Certificate('backend/firebase-service-account.json')
-            firebase_admin.initialize_app(cred, options={"projectId": "microproject2-7ac7e"})
-        print("✅ Firebase initialized")
-        
-        # Get or create admin user
-        ADMIN_EMAIL = "admin@gmail.com"
-        ADMIN_PASSWORD = "Jijo@2003"
-        ADMIN_DISPLAY_NAME = "Admin User"
-        
-        try:
-            fb_user = fb_auth.get_user_by_email(ADMIN_EMAIL)
-            print(f"✅ Admin user exists: {fb_user.uid}")
-        except Exception as e:
-            if "user-not-found" in str(e):
-                fb_user = fb_auth.create_user(
-                    email=ADMIN_EMAIL,
-                    password=ADMIN_PASSWORD,
-                    display_name=ADMIN_DISPLAY_NAME
-                )
-                print(f"✅ Created admin user: {fb_user.uid}")
-        
-        # Create mock user database
-        mock_users = {
-            "users": [
-                {
-                    "uid": fb_user.uid,
-                    "email": ADMIN_EMAIL,
-                    "displayName": ADMIN_DISPLAY_NAME,
-                    "role": "admin",
-                    "createdAt": "2025-01-28T10:00:00Z",
-                    "lastLogin": "2025-01-28T10:00:00Z"
-                }
-            ]
-        }
-        
-        # Save to JSON file (temporary database)
-        with open('backend/mock_users.json', 'w') as f:
-            json.dump(mock_users, f, indent=2)
-        
-        print(f"✅ Created mock user database")
-        print(f"✅ Admin user ready: {ADMIN_EMAIL} / {ADMIN_PASSWORD}")
-        print(f"\n🎯 Ready to test!")
-        print(f"1. Start backend: cd backend && uvicorn main:app --reload --port 8000")
-        print(f"2. Start frontend: cd frontend && npm run dev")
-        print(f"3. Login with: {ADMIN_EMAIL} / {ADMIN_PASSWORD}")
-        print(f"4. Should redirect to: /admin-dashboard")
-        
-        return True
-        
-    except Exception as e:
-        print(f"❌ Setup failed: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
+    print("⚠️  DEPRECATION WARNING:")
+    print("This script is deprecated. Please use the new unified setup:")
+    print("   python unified_setup.py mock")
+    print("\nProceeding with legacy compatibility...")
+    print("=" * 60)
+    
+    return setup_admin_mock("mock_users.json")
 
 if __name__ == "__main__":
     setup_admin_without_mongodb()

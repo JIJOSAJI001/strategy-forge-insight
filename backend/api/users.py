@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Literal, List, Optional, Dict, Any
 from datetime import datetime, timezone
-from auth_file import verify_firebase_token, require_role, load_users, save_users, initialize_firebase
+from auth_mongodb import verify_firebase_token, require_role, load_users, save_users, initialize_firebase
 import json
 from firebase_admin import auth as fb_auth
 
@@ -34,22 +34,23 @@ class PromoteRequest(BaseModel):
 
 @router.post("/admin/promote")
 async def promote(req: PromoteRequest, admin=Depends(require_role("admin"))):
-    users_data = load_users()
-    users = users_data.get("users", [])
-
+    from db.mongo import MongoDB
+    
+    # Connect to MongoDB
+    await MongoDB.connect_to_mongo()
+    users = MongoDB.get_collection("users")
+    
     # Find and update user
-    target = None
-    for u in users:
-        if u.get("firebaseUid") == req.uid:
-            u["role"] = req.role
-            target = u
-            break
-
-    if target is None:
+    existing_user = await users.find_one({"firebaseUid": req.uid})
+    
+    if existing_user is None:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Save updated users
-    save_users(users_data)
+    # Update user role
+    await users.update_one(
+        {"firebaseUid": req.uid}, 
+        {"$set": {"role": req.role}}
+    )
 
     # Create audit record (simplified)
     audit = {
@@ -99,15 +100,31 @@ class UserRecord(BaseModel):
 
 @router.get("/admin", response_model=List[UserRecord])
 async def list_users(admin=Depends(require_role("admin"))):
-    users_data = load_users()
-    return users_data.get("users", [])
+    from db.mongo import MongoDB
+    
+    await MongoDB.connect_to_mongo()
+    users = MongoDB.get_collection("users")
+    user_list = await users.find({}).to_list(length=None)
+    
+    # Convert ObjectId to string for JSON serialization
+    for user in user_list:
+        if '_id' in user:
+            user['_id'] = str(user['_id'])
+        # Ensure uid exists for backward compatibility
+        if 'firebaseUid' in user and 'uid' not in user:
+            user['uid'] = user['firebaseUid']
+    
+    return user_list
 
 
 @router.get("/admin/count")
 async def count_users(admin=Depends(require_role("admin"))):
-    users_data = load_users()
-    users = users_data.get("users", [])
-    return {"count": len(users)}
+    from db.mongo import MongoDB
+    
+    await MongoDB.connect_to_mongo()
+    users = MongoDB.get_collection("users")
+    count = await users.count_documents({})
+    return {"count": count}
 
 
 @router.post("/admin")

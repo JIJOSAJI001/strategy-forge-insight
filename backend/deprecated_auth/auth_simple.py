@@ -1,3 +1,10 @@
+"""
+❌ DEPRECATED: This authentication module is deprecated.
+Please use auth_mongodb.py for all authentication operations.
+This file has been moved to deprecated_auth/ folder.
+"""
+raise ImportError("❌ Deprecated: Please use auth_mongodb.py for authentication.")
+
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from typing import Any, Dict, Optional

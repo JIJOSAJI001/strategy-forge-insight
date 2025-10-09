@@ -9,7 +9,7 @@ from datetime import datetime
 
 load_dotenv()
 
-from auth_file import verify_firebase_token, require_role
+from auth_mongodb import verify_firebase_token, require_role
 
 router = APIRouter(dependencies=[Depends(verify_firebase_token)])
 

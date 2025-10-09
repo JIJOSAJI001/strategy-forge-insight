@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 
 from services.data_manager import DATA_DIR, get_data
-from auth_file import require_role
+from auth_mongodb import require_role
 
 
 router = APIRouter(prefix="/data", tags=["data"])

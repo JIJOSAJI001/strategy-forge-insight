@@ -1,3 +1,10 @@
+"""
+❌ DEPRECATED: This authentication module is deprecated.
+Please use auth_mongodb.py for all authentication operations.
+This file has been moved to deprecated_auth/ folder.
+"""
+raise ImportError("❌ Deprecated: Please use auth_mongodb.py for authentication.")
+
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from typing import Any, Dict, Optional
@@ -16,16 +23,31 @@ def initialize_firebase() -> None:
 
     cred_json_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     project_id = os.getenv("FIREBASE_PROJECT_ID")
+    
+    print(f"🔍 Firebase initialization:")
+    print(f"   Credentials path: {cred_json_path}")
+    print(f"   File exists: {os.path.isfile(cred_json_path) if cred_json_path else False}")
+    print(f"   Project ID: {project_id}")
 
     if firebase_admin._apps:
         _firebase_initialized = True
+        print("✅ Firebase already initialized")
         return
 
     if cred_json_path and os.path.isfile(cred_json_path):
-        cred = credentials.Certificate(cred_json_path)
-        firebase_admin.initialize_app(cred, options={"projectId": project_id} if project_id else None)
+        try:
+            cred = credentials.Certificate(cred_json_path)
+            firebase_admin.initialize_app(cred, options={"projectId": project_id} if project_id else None)
+            print("✅ Firebase initialized with service account")
+        except Exception as e:
+            print(f"❌ Failed to initialize Firebase with service account: {e}")
+            raise
     else:
-        firebase_admin.initialize_app()
+        print("❌ Service account file not found, cannot initialize Firebase properly")
+        print(f"   Expected path: {cred_json_path}")
+        print(f"   Current working directory: {os.getcwd()}")
+        raise FileNotFoundError(f"Service account file not found at: {cred_json_path}")
+    
     _firebase_initialized = True
 
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -51,9 +73,22 @@ async def verify_firebase_token(request: Request, creds: Optional[HTTPAuthorizat
 
     token = creds.credentials
     try:
+        print(f"🔍 Attempting to verify Firebase token...")
+        print(f"   Token length: {len(token)}")
+        print(f"   Token preview: {token[:50]}...")
+        
         decoded = fb_auth.verify_id_token(token)
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+        print(f"✅ Token verified successfully")
+        print(f"   UID: {decoded.get('uid')}")
+        print(f"   Email: {decoded.get('email')}")
+        print(f"   Project ID: {decoded.get('aud')}")
+        
+    except Exception as e:
+        print(f"❌ Token verification failed: {str(e)}")
+        print(f"   Error type: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=401, detail=f"Invalid or expired token: {str(e)}")
 
     uid = decoded.get("uid")
     email = decoded.get("email")
