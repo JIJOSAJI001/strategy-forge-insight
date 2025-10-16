@@ -59,7 +59,8 @@ app.include_router(strategy_router, prefix="/api", tags=["strategies"])
 app.include_router(data_router, prefix="/api")
 app.include_router(backtest_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
-app.include_router(admin_market_data_router, prefix="/api", tags=["admin"])
+# Temporarily disabled due to pydantic schema issue
+# app.include_router(admin_market_data_router, prefix="/api", tags=["admin"])
 app.include_router(retail_backtest_router, prefix="/api", tags=["retail"])
 
 # MongoDB connection will be handled directly in the API routes
