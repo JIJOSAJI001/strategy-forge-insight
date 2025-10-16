@@ -6,7 +6,9 @@ import { useBacktest } from '@/hooks/useBacktest';
 import { useStrategies } from '@/hooks/useStrategies';
 import { useToast } from '@/components/ui/use-toast';
 
-export default function Backtesting() {
+
+
+const BacktestingPage: React.FC = () => {
   // State management
   const [selectedStrategy, setSelectedStrategy] = useState<string | null>(null);
   const [symbol, setSymbol] = useState<string>('');
@@ -176,4 +178,6 @@ export default function Backtesting() {
       )}
     </div>
   );
-}
+};
+
+export default BacktestingPage;

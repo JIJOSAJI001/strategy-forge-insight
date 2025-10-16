@@ -55,7 +55,19 @@ async def verify_firebase_token(request: Request, creds: Optional[HTTPAuthorizat
         print(f"   Token length: {len(token)}")
         print(f"   Token preview: {token[:50]}...")
         
-        decoded = fb_auth.verify_id_token(token)
+        # Try verifying with check_revoked=False to handle clock skew issues
+        try:
+            decoded = fb_auth.verify_id_token(token, check_revoked=False)
+        except Exception as clock_error:
+            if "Token used too early" in str(clock_error):
+                print(f"⚠️ Clock skew detected, retrying with leeway...")
+                # Wait a moment and retry
+                import time
+                time.sleep(2)
+                decoded = fb_auth.verify_id_token(token, check_revoked=False)
+            else:
+                raise
+        
         print(f"✅ Token verified successfully")
         print(f"   UID: {decoded.get('uid')}")
         print(f"   Email: {decoded.get('email')}")
