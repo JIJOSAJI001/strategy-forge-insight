@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { History } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import BacktestInputPanel from '@/components/backtesting/BacktestInputPanel';
 import BacktestResultsPanel from '@/components/backtesting/BacktestResultsPanel';
 import { useBacktest } from '@/hooks/useBacktest';
@@ -106,34 +107,28 @@ export default function Backtesting() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="space-y-6 pb-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-8 shadow-lg">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-white mb-2">
-                📊 Strategy Backtester
-              </h1>
-              <p className="text-blue-100 text-lg">
-                Run your saved or public strategies on real historical market data
-              </p>
-            </div>
-            
-            <button
-              onClick={() => setShowHistory(!showHistory)}
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
-            >
-              <History className="w-5 h-5" />
-              History
-            </button>
-          </div>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-[#F9FAFB]">Strategy Backtester</h1>
+          <p className="text-[#9CA3AF]">Run your saved or public strategies on real historical market data</p>
+        </div>
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-[#374151] text-[#9CA3AF] hover:bg-[#374151] hover:text-[#F9FAFB]"
+            onClick={() => setShowHistory(!showHistory)}
+          >
+            <History className="h-4 w-4 mr-2" />
+            History
+          </Button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Input Panel - Left Side (30%) */}
           <div className="lg:col-span-4">
             <BacktestInputPanel
@@ -166,14 +161,13 @@ export default function Backtesting() {
             />
           </div>
         </div>
-      </div>
 
-      {/* History Sidebar */}
-      {showHistory && (
-        <div className="fixed right-0 top-0 h-full w-80 bg-white dark:bg-gray-800 shadow-2xl z-50">
-          {/* History sidebar implementation */}
-        </div>
-      )}
-    </div>
-  );
-}
+        {/* History Sidebar */}
+        {showHistory && (
+          <div className="fixed right-0 top-0 h-full w-80 bg-white dark:bg-gray-800 shadow-2xl z-50">
+            {/* History sidebar implementation */}
+          </div>
+        )}
+      </div>
+    );
+  }

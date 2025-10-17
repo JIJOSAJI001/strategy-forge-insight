@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react';
-import { Play, Loader, TrendingUp, Clock, Database, Layers, Calendar } from 'lucide-react';
+import { Play, Loader, TrendingUp, Clock, Database, Layers, Calendar, AlertTriangle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { InfoBadge } from '@/components/ui/info-badge';
 import { AutocompleteInput } from '@/components/ui/autocomplete-input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Strategy {
   _id: string;
@@ -70,6 +71,34 @@ const BacktestInputPanel: React.FC<BacktestInputPanelProps> = ({
     { value: '30m', label: '30 Minutes' },
     { value: '15m', label: '15 Minutes' },
   ];
+
+  // Data availability for symbols (based on actual CSV data)
+  const dataAvailability: { [key: string]: { start: string; end: string } } = {
+    'NIFTY': { start: '2019-01-01', end: '2024-01-01' },
+    'BANKNIFTY': { start: '2019-01-01', end: '2024-01-01' },
+    'INFY': { start: '2019-01-01', end: '2024-01-01' },
+    'INFY.NS': { start: '2019-01-01', end: '2024-01-01' },
+    'TCS': { start: '2019-01-01', end: '2024-01-01' },
+    'TCS.NS': { start: '2019-01-01', end: '2024-01-01' },
+  };
+
+  // Get data availability for current symbol
+  const currentDataAvailability = useMemo(() => {
+    const normalizedSymbol = symbol.toUpperCase().replace('.NS', '');
+    return dataAvailability[symbol.toUpperCase()] || 
+           dataAvailability[normalizedSymbol] || 
+           null;
+  }, [symbol]);
+
+  // Check if selected dates are outside available data range
+  const isDateOutOfRange = useMemo(() => {
+    if (!currentDataAvailability || !startDate || !endDate) return false;
+    
+    const availStart = new Date(currentDataAvailability.start);
+    const availEnd = new Date(currentDataAvailability.end);
+    
+    return startDate < availStart || endDate > availEnd;
+  }, [currentDataAvailability, startDate, endDate]);
 
   // Group strategies by ownership
   const { ownedStrategies, publicStrategies } = useMemo(() => {
@@ -283,6 +312,31 @@ const BacktestInputPanel: React.FC<BacktestInputPanelProps> = ({
           <p className="mt-2 text-xs text-gray-500">
             Duration: {Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))} days
           </p>
+        )}
+        
+        {/* Data Availability Warning */}
+        {currentDataAvailability && (
+          <Alert className="mt-3 border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+            <Database className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-sm text-blue-800 dark:text-blue-200">
+              <strong>Data Available:</strong> {currentDataAvailability.start} to {currentDataAvailability.end}
+              {isDateOutOfRange && (
+                <div className="flex items-center gap-1 mt-1 text-amber-700 dark:text-amber-400">
+                  <AlertTriangle className="h-3 w-3" />
+                  <span className="font-semibold">Warning: Selected dates are outside available data range</span>
+                </div>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {!currentDataAvailability && symbol && (
+          <Alert className="mt-3 border-amber-200 bg-amber-50 dark:bg-amber-900/20">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-sm text-amber-800 dark:text-amber-200">
+              Data availability for <strong>{symbol}</strong> is not confirmed. Historical data will be fetched from Yahoo Finance if available.
+            </AlertDescription>
+          </Alert>
         )}
       </div>
 

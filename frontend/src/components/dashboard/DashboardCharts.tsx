@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   LineChart,
@@ -12,34 +13,92 @@ import {
   BarChart,
   Bar
 } from "recharts";
+import { useAuth } from "@/contexts/AuthContext";
 
-// Sample data for charts
-const equityData = [
-  { date: "Jan", portfolio: 10000, benchmark: 10000 },
-  { date: "Feb", portfolio: 10250, benchmark: 10100 },
-  { date: "Mar", portfolio: 10800, benchmark: 10350 },
-  { date: "Apr", portfolio: 11200, benchmark: 10200 },
-  { date: "May", portfolio: 11800, benchmark: 10800 },
-  { date: "Jun", portfolio: 12400, benchmark: 11000 },
-];
-
-const drawdownData = [
-  { date: "Jan", drawdown: 0 },
-  { date: "Feb", drawdown: -2.5 },
-  { date: "Mar", drawdown: -1.2 },
-  { date: "Apr", drawdown: -3.8 },
-  { date: "May", drawdown: -1.5 },
-  { date: "Jun", drawdown: 0 },
-];
-
-const performanceData = [
-  { strategy: "RSI Mean Reversion", returns: 24.5 },
-  { strategy: "Moving Average", returns: 18.2 },
-  { strategy: "Bollinger Bands", returns: 31.7 },
-  { strategy: "MACD Strategy", returns: 15.9 },
-];
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export function DashboardCharts() {
+  const { user } = useAuth();
+  const [equityData, setEquityData] = useState<any[]>([]);
+  const [drawdownData, setDrawdownData] = useState<any[]>([]);
+  const [performanceData, setPerformanceData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchChartData = async () => {
+      try {
+        setLoading(true);
+        const token = user ? await user.getIdToken() : null;
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const userId = user?.uid;
+
+        // Fetch equity curve with user context
+        const equityResponse = await fetch(
+          `${API_BASE_URL}/api/dashboard/equity-curve`, 
+          { headers }
+        );
+        if (equityResponse.ok) {
+          const equityResult = await equityResponse.json();
+          setEquityData(equityResult.data);
+        }
+
+        // Fetch drawdown with user context
+        const drawdownResponse = await fetch(
+          `${API_BASE_URL}/api/dashboard/drawdown-history`, 
+          { headers }
+        );
+        if (drawdownResponse.ok) {
+          const drawdownResult = await drawdownResponse.json();
+          setDrawdownData(drawdownResult.data);
+        }
+
+        // Fetch performance comparison with user context
+        const performanceResponse = await fetch(
+          `${API_BASE_URL}/api/dashboard/performance-comparison`, 
+          { headers }
+        );
+        if (performanceResponse.ok) {
+          const performanceResult = await performanceResponse.json();
+          setPerformanceData(performanceResult.data);
+        }
+      } catch (error) {
+        console.error('Error fetching chart data:', error);
+        // Use empty data on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChartData();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="h-64 bg-[#374151] animate-pulse rounded-lg"></div>
+        ))}
+      </div>
+    );
+  }
+
+  // Check if user has any backtest data
+  const hasData = equityData.length > 1 || performanceData.length > 0;
+
+  if (!hasData) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="text-[#9CA3AF] mb-4">
+          <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          <p className="text-lg font-medium mb-2">No backtest data yet</p>
+          <p className="text-sm mb-6">Run backtests to see performance charts and analytics here</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Equity Curve */}

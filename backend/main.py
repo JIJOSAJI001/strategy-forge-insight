@@ -6,6 +6,7 @@ from api.backtest import router as backtest_router
 from api.users import router as users_router
 from api.admin_market_data import router as admin_market_data_router
 from api.retail_backtest import router as retail_backtest_router
+from api.dashboard import router as dashboard_router
 from auth_mongodb import initialize_firebase
 from db.mongo import MongoDB
 import uvicorn
@@ -59,6 +60,7 @@ app.include_router(strategy_router, prefix="/api", tags=["strategies"])
 app.include_router(data_router, prefix="/api")
 app.include_router(backtest_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
+app.include_router(dashboard_router, prefix="/api", tags=["dashboard"])
 # Temporarily disabled due to pydantic schema issue
 # app.include_router(admin_market_data_router, prefix="/api", tags=["admin"])
 app.include_router(retail_backtest_router, prefix="/api", tags=["retail"])
