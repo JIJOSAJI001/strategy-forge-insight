@@ -11,8 +11,16 @@ class MongoDB:
     _connected: bool = False
 
     @classmethod
+    @property
+    def db(cls):
+        """Shorthand property to access database."""
+        if cls.database is None:
+            raise RuntimeError("Database not connected. Call connect_to_mongo() first.")
+        return cls.database
+
+    @classmethod
     async def connect_to_mongo(cls):
-        """Create database connection."""
+        """Create database connection and set up indexes for performance."""
         mongodb_uri = os.getenv("MONGODB_URI")
         database_name = os.getenv("DATABASE_NAME", "strategy_forge")
         
@@ -32,6 +40,28 @@ class MongoDB:
             print(f"MongoDB connection test failed: {e}")
             cls._connected = False
             raise
+        
+        # Create indexes for performance optimization
+        try:
+            print("Creating database indexes...")
+            
+            # Indexes for backtests collection
+            await cls.database["backtests"].create_index([("user_id", 1), ("created_at", -1)])
+            await cls.database["backtests"].create_index([("user_id", 1), ("metrics.total_return", -1)])
+            await cls.database["backtests"].create_index([("user_id", 1)])
+            
+            # Indexes for strategies collection
+            await cls.database["drag_drop_strategies"].create_index([("ownerId", 1)])
+            await cls.database["drag_drop_strategies"].create_index([("ownerId", 1), ("createdAt", -1)])
+            
+            # Indexes for users collection
+            await cls.database["users"].create_index([("uid", 1)], unique=True)
+            await cls.database["users"].create_index([("email", 1)])
+            
+            print("✅ Database indexes created successfully")
+        except Exception as e:
+            print(f"⚠️  Index creation warning: {e}")
+            # Don't fail startup if indexes already exist
 
     @classmethod
     async def close_mongo_connection(cls):

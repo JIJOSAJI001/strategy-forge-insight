@@ -9,6 +9,7 @@ from api.retail_backtest import router as retail_backtest_router
 from api.dashboard import router as dashboard_router
 from auth_mongodb import initialize_firebase
 from db.mongo import MongoDB
+from core.redis_setup import RedisCache
 import uvicorn
 from dotenv import load_dotenv
 import os
@@ -87,11 +88,19 @@ async def on_startup():
         await MongoDB.connect_to_mongo()
         print("✅ MongoDB connected")
         
+        # Connect to Redis (optional - will continue without it if unavailable)
+        await RedisCache.connect_to_redis()
+        if RedisCache.is_connected():
+            print("✅ Redis cache enabled")
+        else:
+            print("⚠️  Redis cache disabled (continuing without caching)")
+        
         # Verify environment variables are loaded
         print(f"🔧 Environment check:")
         print(f"  MONGODB_URI: {'✅ Set' if os.getenv('MONGODB_URI') else '❌ Missing'}")
         print(f"  GOOGLE_APPLICATION_CREDENTIALS: {'✅ Set' if os.getenv('GOOGLE_APPLICATION_CREDENTIALS') else '❌ Missing'}")
         print(f"  FIREBASE_PROJECT_ID: {'✅ Set' if os.getenv('FIREBASE_PROJECT_ID') else '❌ Missing'}")
+        print(f"  REDIS_URL: {'✅ Set' if os.getenv('REDIS_URL') else '⚠️  Using default (localhost:6379)'}")
         
         initialize_firebase()
         print("✅ Firebase initialized")
@@ -128,6 +137,7 @@ async def on_startup():
 @app.on_event("shutdown")
 async def on_shutdown():
     await MongoDB.close_mongo_connection()
+    await RedisCache.close_redis_connection()
     print("✅ API server shutdown")
 
 
