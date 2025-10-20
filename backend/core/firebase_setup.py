@@ -122,23 +122,35 @@ class FirebaseSetup:
                 firebase_admin.delete_app(firebase_admin._apps[app_name])
         
         try:
-            # Resolve service account path
-            if not service_account_path:
-                service_account_path = self._find_service_account_file()
-                if not service_account_path:
-                    logger.error("Could not find Firebase service account file")
-                    return False
-            
             # Resolve project ID
             if not project_id:
                 project_id = os.getenv("FIREBASE_PROJECT_ID", DEFAULT_PROJECT_ID)
             
-            # Setup environment variables
-            self._setup_environment_variables(service_account_path, project_id)
-            
             # Initialize Firebase
             if not firebase_admin._apps:
-                cred = credentials.Certificate(service_account_path)
+                # Try to get credentials from environment variable first (for production)
+                firebase_json_str = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+                
+                if firebase_json_str:
+                    # Parse JSON from environment variable
+                    logger.info("Using Firebase credentials from FIREBASE_SERVICE_ACCOUNT_JSON environment variable")
+                    service_account_info = json.loads(firebase_json_str)
+                    cred = credentials.Certificate(service_account_info)
+                    self._service_account_path = "env:FIREBASE_SERVICE_ACCOUNT_JSON"
+                else:
+                    # Fall back to file-based credentials (for local development)
+                    if not service_account_path:
+                        service_account_path = self._find_service_account_file()
+                        if not service_account_path:
+                            logger.error("Could not find Firebase service account file or FIREBASE_SERVICE_ACCOUNT_JSON env var")
+                            return False
+                    
+                    logger.info(f"Using Firebase credentials from file: {service_account_path}")
+                    cred = credentials.Certificate(service_account_path)
+                    self._service_account_path = service_account_path
+                    # Setup environment variables for file-based approach
+                    self._setup_environment_variables(service_account_path, project_id)
+                
                 self._app = firebase_admin.initialize_app(
                     cred, 
                     options={"projectId": project_id}
@@ -148,7 +160,6 @@ class FirebaseSetup:
                 self._app = firebase_admin.get_app()
                 logger.info("✅ Using existing Firebase app")
             
-            self._service_account_path = service_account_path
             self._project_id = project_id
             self._is_initialized = True
             
@@ -156,6 +167,8 @@ class FirebaseSetup:
             
         except Exception as e:
             logger.error(f"❌ Firebase initialization failed: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def get_firebase_user(self, email: str) -> Optional[fb_auth.UserRecord]:
