@@ -38,7 +38,8 @@ app.add_middleware(
         "http://localhost:4173",   # Vite preview port
         "http://127.0.0.1:4173",
         "http://localhost:8081",   # Additional port
-        "http://127.0.0.1:8081"
+        "http://127.0.0.1:8081",
+        "https://strategy-forge-insight.vercel.app",  # Production frontend (Vercel)
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
