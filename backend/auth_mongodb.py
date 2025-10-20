@@ -6,31 +6,44 @@ from firebase_admin import auth as fb_auth, credentials
 import os
 from datetime import datetime, timezone
 from db.mongo import MongoDB
-
-_firebase_initialized = False
+from core.firebase_setup import firebase_setup
 
 def initialize_firebase() -> None:
-    global _firebase_initialized
-    if _firebase_initialized:
-        return
-
-    cred_json_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-    project_id = os.getenv("FIREBASE_PROJECT_ID")
-
-    if firebase_admin._apps:
-        _firebase_initialized = True
-        return
-
-    if cred_json_path and os.path.isfile(cred_json_path):
-        cred = credentials.Certificate(cred_json_path)
-        firebase_admin.initialize_app(cred, options={"projectId": project_id} if project_id else None)
-    else:
-        firebase_admin.initialize_app()
-    _firebase_initialized = True
+    """Initialize Firebase app using centralized setup"""
+    try:
+        if not firebase_setup.initialize_firebase():
+            raise RuntimeError("Failed to initialize Firebase using centralized setup")
+        print("✅ Firebase initialized using centralized setup")
+    except Exception as e:
+        print(f"❌ Firebase initialization failed: {e}")
+        raise
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
+async def load_users():
+    """Load users from MongoDB collection"""
+    try:
+        await MongoDB.connect_to_mongo()
+        users = MongoDB.get_collection("users")
+        user_list = await users.find({}).to_list(length=None)
+        # Convert ObjectId to string for JSON serialization
+        for user in user_list:
+            if '_id' in user:
+                user['_id'] = str(user['_id'])
+        return {"users": user_list}
+    except Exception as e:
+        print(f"❌ Failed to load users from MongoDB: {e}")
+        return {"users": []}
+
+async def save_users(users_data):
+    """Save users to MongoDB collection - Not needed with MongoDB but kept for compatibility"""
+    # This function is maintained for compatibility but MongoDB operations 
+    # are handled directly in verify_firebase_token and other functions
+    print("⚠️ save_users called - MongoDB operations are handled directly")
+    pass
+
 async def verify_firebase_token(request: Request, creds: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme)) -> Dict[str, Any]:
+    """Verify Firebase token and manage user in MongoDB"""
     initialize_firebase()
 
     if creds is None or creds.scheme.lower() != "bearer":
@@ -38,9 +51,34 @@ async def verify_firebase_token(request: Request, creds: Optional[HTTPAuthorizat
 
     token = creds.credentials
     try:
-        decoded = fb_auth.verify_id_token(token)
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+        print(f"🔍 Attempting to verify Firebase token...")
+        print(f"   Token length: {len(token)}")
+        print(f"   Token preview: {token[:50]}...")
+        
+        # Try verifying with check_revoked=False to handle clock skew issues
+        try:
+            decoded = fb_auth.verify_id_token(token, check_revoked=False)
+        except Exception as clock_error:
+            if "Token used too early" in str(clock_error):
+                print(f"⚠️ Clock skew detected, retrying with leeway...")
+                # Wait a moment and retry
+                import time
+                time.sleep(2)
+                decoded = fb_auth.verify_id_token(token, check_revoked=False)
+            else:
+                raise
+        
+        print(f"✅ Token verified successfully")
+        print(f"   UID: {decoded.get('uid')}")
+        print(f"   Email: {decoded.get('email')}")
+        print(f"   Project ID: {decoded.get('aud')}")
+        
+    except Exception as e:
+        print(f"❌ Token verification failed: {str(e)}")
+        print(f"   Error type: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=401, detail=f"Invalid or expired token: {str(e)}")
 
     uid = decoded.get("uid")
     email = decoded.get("email")
@@ -52,6 +90,7 @@ async def verify_firebase_token(request: Request, creds: Optional[HTTPAuthorizat
         await MongoDB.connect_to_mongo()
         users = MongoDB.get_collection("users")
     except Exception as e:
+        print(f"❌ MongoDB connection failed: {e}")
         raise HTTPException(status_code=500, detail=f"Database connection failed: {e}")
 
     # Find or create user in MongoDB
@@ -70,6 +109,7 @@ async def verify_firebase_token(request: Request, creds: Optional[HTTPAuthorizat
         }
         await users.insert_one(new_user)
         user_doc = new_user
+        print(f"✅ Created new user: {email} ({uid})")
     else:
         # Update existing user
         await users.update_one(
@@ -80,11 +120,22 @@ async def verify_firebase_token(request: Request, creds: Optional[HTTPAuthorizat
                 "displayName": name
             }}
         )
+        
+        # Ensure role is valid
+        if existing_user.get("role") not in ["admin", "retail"]:
+            existing_user["role"] = "retail"
+            await users.update_one(
+                {"firebaseUid": uid}, 
+                {"$set": {"role": "retail"}}
+            )
+        
         user_doc = existing_user
+        print(f"✅ Updated existing user: {email} ({uid})")
 
     # Attach to request state for downstream usage
     request.state.user = {
         "uid": uid, 
+        "firebaseUid": uid,
         "email": email, 
         "displayName": name, 
         "role": user_doc.get("role", "retail")

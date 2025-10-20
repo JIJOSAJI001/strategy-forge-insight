@@ -61,10 +61,12 @@ export function AppLayout({ children, hideSidebar, hideTopNavLinks }: AppLayoutP
                 >
                   Backtesting
                 </Button>
+                {/* Temporarily hidden - coming soon
                 <Button 
                   variant="ghost" 
                   className="text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151] font-medium"
                   onClick={() => navigate('/portfolio')}
+                  disabled
                 >
                   Portfolio
                 </Button>
@@ -72,10 +74,12 @@ export function AppLayout({ children, hideSidebar, hideTopNavLinks }: AppLayoutP
                   variant="ghost" 
                   className="text-[#3B82F6] hover:text-[#60A5FA] hover:bg-[#374151] font-medium"
                   onClick={() => navigate('/ai-assistant')}
+                  disabled
                 >
                   <Sparkles className="h-4 w-4 mr-2" />
                   AI Assistant
                 </Button>
+                */}
               </nav>
             )}
             

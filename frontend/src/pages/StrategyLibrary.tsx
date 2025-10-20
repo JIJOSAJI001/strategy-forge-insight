@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { StrategyCard } from "@/components/dashboard/StrategyCard";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Search, 
   Filter, 
@@ -14,7 +18,9 @@ import {
   Download,
   Plus,
   Grid3X3,
-  List
+  List,
+  Upload,
+  Eye
 } from "lucide-react";
 
 // Strategy interface matching the backend response
@@ -40,6 +46,8 @@ const categories = ["All", "Mean Reversion", "Momentum", "Trend Following", "Arb
 const difficulties = ["All", "Beginner", "Intermediate", "Advanced", "Expert"];
 
 export default function StrategyLibrary() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
@@ -48,13 +56,30 @@ export default function StrategyLibrary() {
   const [strategies, setStrategies] = useState<Strategy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [previewStrategy, setPreviewStrategy] = useState<Strategy | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   // Fetch strategies from the backend
   useEffect(() => {
     const fetchStrategies = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:8001/api/strategies');
+        
+        // Get auth token
+        const token = user ? await user.getIdToken() : null;
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+        
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/api/strategies`, {
+          headers
+        });
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -72,7 +97,52 @@ export default function StrategyLibrary() {
     };
 
     fetchStrategies();
-  }, []);
+  }, [user, API_BASE_URL]);
+
+  // Handle button actions
+  const handleUseStrategy = (strategyId: string) => {
+    navigate(`/backtesting?strategy=${strategyId}`);
+  };
+
+  const handlePreview = (strategy: Strategy) => {
+    setPreviewStrategy(strategy);
+  };
+
+  const handleImportStrategy = () => {
+    setImportDialogOpen(true);
+  };
+
+  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const importedStrategy = JSON.parse(text);
+      
+      // Validate and save imported strategy
+      toast.success("Strategy imported successfully!");
+      setImportDialogOpen(false);
+      
+      // Refresh strategies list with auth
+      const token = user ? await user.getIdToken() : null;
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/api/strategies`, { headers });
+      if (response.ok) {
+        const data = await response.json();
+        setStrategies(data);
+      }
+    } catch (error) {
+      toast.error("Failed to import strategy. Please check the file format.");
+    }
+  };
 
   const filteredStrategies = strategies
     .filter(strategy => {
@@ -160,11 +230,11 @@ export default function StrategyLibrary() {
           <p className="text-muted-foreground">Discover and deploy proven trading strategies</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={handleImportStrategy}>
+            <Upload className="h-4 w-4 mr-2" />
             Import Strategy
           </Button>
-          <Button variant="trading" size="sm">
+          <Button variant="trading" size="sm" onClick={() => navigate('/drag-drop-strategy-builder')}>
             <Plus className="h-4 w-4 mr-2" />
             Create New
           </Button>
@@ -330,11 +400,20 @@ export default function StrategyLibrary() {
                   <span>{strategy.downloads} downloads</span>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="trading" size="sm" className="flex-1">
+                  <Button 
+                    variant="trading" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => handleUseStrategy(strategy.id)}
+                  >
                     Use Strategy
                   </Button>
-                  <Button variant="outline" size="sm">
-                    Preview
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handlePreview(strategy)}
+                  >
+                    <Eye className="h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
@@ -370,10 +449,19 @@ export default function StrategyLibrary() {
                     </div>
                   </div>
                   <div className="flex gap-2 ml-6">
-                    <Button variant="trading" size="sm">
+                    <Button 
+                      variant="trading" 
+                      size="sm"
+                      onClick={() => handleUseStrategy(strategy.id)}
+                    >
                       Use Strategy
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handlePreview(strategy)}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
                       Preview
                     </Button>
                   </div>
@@ -383,6 +471,105 @@ export default function StrategyLibrary() {
           ))}
         </div>
       )}
+
+      {/* Preview Modal */}
+      <Dialog open={!!previewStrategy} onOpenChange={() => setPreviewStrategy(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{previewStrategy?.title}</DialogTitle>
+            <DialogDescription>{previewStrategy?.description}</DialogDescription>
+          </DialogHeader>
+          {previewStrategy && (
+            <div className="space-y-6 mt-4">
+              <div className="flex gap-2">
+                {previewStrategy.category && <Badge>{previewStrategy.category}</Badge>}
+                {previewStrategy.difficulty && <Badge variant="outline">{previewStrategy.difficulty}</Badge>}
+                <div className="flex items-center gap-1 ml-auto">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <span className="font-medium">{previewStrategy.rating}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="text-sm text-muted-foreground mb-1">Performance</div>
+                  <div className="text-xl font-bold text-success">+{previewStrategy.performance}%</div>
+                </div>
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="text-sm text-muted-foreground mb-1">Sharpe Ratio</div>
+                  <div className="text-xl font-bold">{previewStrategy.sharpe}</div>
+                </div>
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="text-sm text-muted-foreground mb-1">Max Drawdown</div>
+                  <div className="text-xl font-bold text-danger">{previewStrategy.drawdown}%</div>
+                </div>
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="text-sm text-muted-foreground mb-1">Win Rate</div>
+                  <div className="text-xl font-bold">{previewStrategy.winrate}%</div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2">Tags</h4>
+                <div className="flex flex-wrap gap-2">
+                  {previewStrategy.tags.map((tag, index) => (
+                    <Badge key={index} variant="secondary">{tag}</Badge>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t">
+                <div className="text-sm text-muted-foreground">
+                  <div>Author: {previewStrategy.author || 'Unknown'}</div>
+                  <div>Downloads: {previewStrategy.downloads}</div>
+                  <div>Last Updated: {previewStrategy.lastUpdated || 'N/A'}</div>
+                </div>
+                <Button 
+                  variant="trading"
+                  onClick={() => {
+                    setPreviewStrategy(null);
+                    handleUseStrategy(previewStrategy.id);
+                  }}
+                >
+                  Use This Strategy
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Dialog */}
+      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import Strategy</DialogTitle>
+            <DialogDescription>
+              Upload a strategy JSON file to import it into your library.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+              <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleFileImport}
+                className="hidden"
+                id="strategy-upload"
+              />
+              <label htmlFor="strategy-upload">
+                <Button variant="outline" asChild>
+                  <span>Choose File</span>
+                </Button>
+              </label>
+              <p className="text-sm text-muted-foreground mt-2">
+                Supported formats: JSON
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

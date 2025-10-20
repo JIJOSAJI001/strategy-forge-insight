@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from typing import List, Optional, Dict, Any, Literal
 from pydantic import BaseModel, Field
 from bson import ObjectId
@@ -9,13 +10,19 @@ from datetime import datetime
 
 load_dotenv()
 
-from auth_file import verify_firebase_token, require_role
+from auth_mongodb import verify_firebase_token, require_role
 
-router = APIRouter(dependencies=[Depends(verify_firebase_token)])
+# Bearer scheme for optional authentication
+bearer_scheme = HTTPBearer(auto_error=False)
+
+# Create router without global auth dependency
+# Individual endpoints will specify auth requirements
+router = APIRouter()
 
 # Existing models for backward compatibility
 class StrategyBase(BaseModel):
     title: str
+    name: Optional[str] = None  # Add name field for compatibility
     description: str
     performance: float
     sharpe: float
@@ -27,6 +34,10 @@ class StrategyBase(BaseModel):
     category: Optional[str] = None
     difficulty: Optional[str] = None
     author: Optional[str] = None
+    userId: Optional[str] = None  # Add userId field
+    isPublic: Optional[bool] = None  # Add isPublic field
+    createdAt: Optional[str] = None  # Add createdAt field
+    updatedAt: Optional[str] = None  # Add updatedAt field
     lastUpdated: Optional[str] = None
     status: Optional[str] = None
 
@@ -240,9 +251,22 @@ def _validate_strategy_definition(strategy: StrategyDefinition) -> List[str]:
 
 
 @router.post("/strategies/defs", response_model=StrategyDefResponse)
-async def create_strategy_definition(request: StrategyDefCreateRequest):
+async def create_strategy_definition(
+    request_obj: Request, 
+    payload: StrategyDefCreateRequest,
+    creds: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+):
     try:
-        strategy = request.strategy
+        # Verify authentication and get user info
+        user_info = await verify_firebase_token(request_obj, creds)
+        user_id = user_info.get("uid")
+        
+        strategy = payload.strategy
+        
+        # Override ownerId with authenticated user's ID for security
+        strategy_dict = strategy.dict(by_alias=True)
+        strategy_dict["ownerId"] = user_id
+        
         # Validate
         errors = _validate_strategy_definition(strategy)
         if errors:
@@ -250,7 +274,7 @@ async def create_strategy_definition(request: StrategyDefCreateRequest):
 
         collection, client = await get_mongodb_collection(_strategy_def_collection_name())
         now = await _now_iso()
-        doc: Dict[str, Any] = strategy.dict(by_alias=True)
+        doc: Dict[str, Any] = strategy_dict
         doc.pop("_id", None)
         doc["createdAt"] = now
         doc["updatedAt"] = now
@@ -258,10 +282,13 @@ async def create_strategy_definition(request: StrategyDefCreateRequest):
         result = await collection.insert_one(doc)
         doc["_id"] = str(result.inserted_id)
         client.close()
+        
+        print(f"✅ Strategy created by user {user_id}: {doc.get('name', 'Untitled')}")
         return StrategyDefResponse(**doc)
     except HTTPException:
         raise
     except Exception as e:
+        print(f"❌ Error creating strategy: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to create strategy definition: {str(e)}")
 
 
@@ -282,32 +309,77 @@ async def get_strategy_definition(strategy_id: str):
 
 
 @router.get("/strategies/defs", response_model=List[StrategyDefResponse])
-async def list_strategy_definitions():
+async def list_strategy_definitions(
+    request: Request, 
+    creds: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme)
+):
+    """
+    List strategy definitions with visibility filtering:
+    - Public strategies: visible to everyone
+    - Private strategies: only visible to the owner
+    """
     try:
+        # Try to get user info from token (optional)
+        current_user_id = None
+        if creds and creds.credentials:
+            try:
+                user_info = await verify_firebase_token(request, creds)
+                current_user_id = user_info.get("uid")
+                print(f"🔍 Listing drag-drop strategies for user: {current_user_id}")
+            except:
+                print("⚠️ Token verification failed, showing only public strategies")
+        
         collection, client = await get_mongodb_collection(_strategy_def_collection_name())
         strategies: List[StrategyDefResponse] = []
+        
         async for doc in collection.find():
-            doc["_id"] = str(doc["_id"])
-            strategies.append(StrategyDefResponse(**doc))
+            visibility = doc.get("visibility", "private")
+            owner_id = doc.get("ownerId", "")
+            
+            # Apply visibility rules: public strategies OR owner's private strategies
+            if visibility == "public" or (current_user_id and owner_id == current_user_id):
+                doc["_id"] = str(doc["_id"])
+                strategies.append(StrategyDefResponse(**doc))
+        
         client.close()
+        print(f"✅ Returning {len(strategies)} drag-drop strategies (user: {current_user_id or 'anonymous'})")
         return strategies
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to list strategy definitions: {str(e)}")
 
 
 @router.put("/strategies/defs/{strategy_id}", response_model=StrategyDefResponse)
-async def update_strategy_definition(strategy_id: str, request: StrategyDefCreateRequest):
+async def update_strategy_definition(
+    strategy_id: str, 
+    request_obj: Request,
+    payload: StrategyDefCreateRequest,
+    creds: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+):
     try:
-        strategy = request.strategy
+        # Verify authentication and get user info
+        user_info = await verify_firebase_token(request_obj, creds)
+        user_id = user_info.get("uid")
+        
+        # Check if user owns this strategy
+        collection, client = await get_mongodb_collection(_strategy_def_collection_name())
+        existing = await collection.find_one({"_id": ObjectId(strategy_id)})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Strategy definition not found")
+        
+        if existing.get("ownerId") != user_id:
+            raise HTTPException(status_code=403, detail="You don't have permission to update this strategy")
+        
+        strategy = payload.strategy
         errors = _validate_strategy_definition(strategy)
         if errors:
             raise HTTPException(status_code=400, detail={"errors": errors})
 
-        collection, client = await get_mongodb_collection(_strategy_def_collection_name())
         now = await _now_iso()
         doc: Dict[str, Any] = strategy.dict(by_alias=True)
         doc.pop("_id", None)
         doc["updatedAt"] = now
+        # Ensure ownerId doesn't change
+        doc["ownerId"] = user_id
 
         result = await collection.update_one({"_id": ObjectId(strategy_id)}, {"$set": doc})
         if result.matched_count == 0:
@@ -316,6 +388,8 @@ async def update_strategy_definition(strategy_id: str, request: StrategyDefCreat
         saved = await collection.find_one({"_id": ObjectId(strategy_id)})
         saved["_id"] = str(saved["_id"])
         client.close()
+        
+        print(f"✅ Strategy updated by user {user_id}: {saved.get('name', 'Untitled')}")
         return StrategyDefResponse(**saved)
     except HTTPException:
         raise
@@ -346,20 +420,83 @@ async def get_mongodb_collection(collection_name: str):
 
 # Existing endpoints for backward compatibility
 @router.get("/strategies", response_model=List[StrategyResponse])
-async def get_strategies():
+async def get_strategies(request: Request, creds: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme)):
     """
-    Fetch all strategies from MongoDB Atlas
+    Fetch strategies from MongoDB Atlas - combines both simple and drag-drop strategies
+    Filters based on visibility:
+    - Public strategies: visible to everyone
+    - Private strategies: only visible to the owner
     """
     try:
-        collection, client = await get_mongodb_collection("strategies")
+        # Try to get user info from token (optional)
+        current_user_id = None
+        if creds and creds.credentials:
+            try:
+                user_info = await verify_firebase_token(request, creds)
+                current_user_id = user_info.get("uid")
+                print(f"🔍 Fetching strategies for authenticated user: {current_user_id}")
+            except:
+                print("⚠️ Token verification failed, showing only public strategies")
+        
+        # Fetch from both collections
+        collection_simple, client1 = await get_mongodb_collection("strategies")
+        collection_defs, client2 = await get_mongodb_collection("drag_drop_strategies")
         
         strategies = []
-        async for strategy in collection.find():
-            # Convert ObjectId to string for JSON serialization
-            strategy["_id"] = str(strategy["_id"])
-            strategies.append(strategy)
         
-        client.close()
+        # Get simple strategies with visibility filter
+        async for strategy in collection_simple.find():
+            visibility = strategy.get("visibility", "private")
+            owner_id = strategy.get("author", "")
+            
+            # Apply visibility rules: public strategies OR owner's private strategies
+            if visibility == "public" or (current_user_id and owner_id == current_user_id):
+                strategy["_id"] = str(strategy["_id"])
+                # Ensure name field exists (use title if name doesn't exist)
+                if "name" not in strategy and "title" in strategy:
+                    strategy["name"] = strategy["title"]
+                # Add default fields if missing
+                if "userId" not in strategy:
+                    strategy["userId"] = owner_id
+                if "isPublic" not in strategy:
+                    strategy["isPublic"] = visibility == "public"
+                strategies.append(strategy)
+        
+        # Get drag-drop strategies with visibility filter
+        async for strategy in collection_defs.find():
+            visibility = strategy.get("visibility", "private")
+            owner_id = strategy.get("ownerId", "")
+            
+            # Apply visibility rules: public strategies OR owner's private strategies
+            if visibility == "public" or (current_user_id and owner_id == current_user_id):
+                strategy_response = {
+                    "_id": str(strategy["_id"]),
+                    "title": strategy.get("name", "Untitled Strategy"),
+                    "name": strategy.get("name", "Untitled Strategy"),
+                    "description": strategy.get("description", ""),
+                    "performance": 0.0,  # TODO: Calculate from backtest results
+                    "sharpe": 0.0,
+                    "drawdown": 0.0,
+                    "winrate": 0.0,
+                    "tags": [strategy.get("timeframe", ""), visibility],
+                    "downloads": 0,
+                    "rating": 0.0,
+                    "category": "Custom",
+                    "difficulty": "Intermediate",
+                    "author": owner_id,
+                    "userId": owner_id,
+                    "isPublic": visibility == "public",
+                    "lastUpdated": strategy.get("updatedAt", ""),
+                    "createdAt": strategy.get("createdAt", ""),
+                    "updatedAt": strategy.get("updatedAt", ""),
+                    "status": "active"
+                }
+                strategies.append(strategy_response)
+        
+        client1.close()
+        client2.close()
+        
+        print(f"✅ Returning {len(strategies)} strategies (user: {current_user_id or 'anonymous'})")
         return strategies
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch strategies: {str(e)}")
@@ -383,7 +520,7 @@ async def get_strategy(strategy_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to fetch strategy: {str(e)}")
 
 # New endpoints for drag-and-drop strategy builder
-@router.post("/strategies", response_model=StrategySaveResponse)
+@router.post("/strategies", response_model=StrategySaveResponse, dependencies=[Depends(verify_firebase_token)])
 async def save_strategy(request: StrategyCreateRequest):
     """
     Save a new drag-and-drop strategy
@@ -415,7 +552,7 @@ async def save_strategy(request: StrategyCreateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save strategy: {str(e)}")
 
-@router.put("/strategies/{strategy_id}", response_model=StrategySaveResponse)
+@router.put("/strategies/{strategy_id}", response_model=StrategySaveResponse, dependencies=[Depends(verify_firebase_token)])
 async def update_strategy(strategy_id: str, request: StrategyCreateRequest):
     """
     Update an existing drag-and-drop strategy
@@ -509,7 +646,7 @@ async def get_drag_drop_strategies():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch strategies: {str(e)}")
 
-@router.delete("/strategies/drag-drop/{strategy_id}")
+@router.delete("/strategies/drag-drop/{strategy_id}", dependencies=[Depends(verify_firebase_token)])
 async def delete_drag_drop_strategy(strategy_id: str):
     """
     Delete a drag-and-drop strategy

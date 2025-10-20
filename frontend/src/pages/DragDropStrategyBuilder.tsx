@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { strategyService } from "@/services/strategy.service";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   StrategyDefinition, 
   IndicatorDef, 
@@ -36,11 +38,11 @@ import { DndContext, DragEndEvent, DragStartEvent, DragOverlay } from "@dnd-kit/
 import IndicatorConfigModal from "@/components/strategy/IndicatorConfigModal";
 import ConditionEditorModal from "@/components/strategy/ConditionEditorModal";
 
-// Default strategy definition
-const DEFAULT_STRATEGY: StrategyDefinition = {
+// Default strategy definition factory (needs user ID)
+const createDefaultStrategy = (userId: string): StrategyDefinition => ({
   name: '',
   description: '',
-  ownerId: 'anonymous', // TODO: Get from auth context
+  ownerId: userId,
   visibility: 'private',
   timeframe: '1h',
   indicators: [],
@@ -53,19 +55,53 @@ const DEFAULT_STRATEGY: StrategyDefinition = {
     positionValue: 10
   },
   pineScriptCode: null
-};
+});
 
 export default function DragDropStrategyBuilder() {
-  const [strategy, setStrategy] = useState<StrategyDefinition>(DEFAULT_STRATEGY);
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const [strategy, setStrategy] = useState<StrategyDefinition>(() => 
+    createDefaultStrategy(user?.uid || 'anonymous')
+  );
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [isValidating, setIsValidating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
   const [indicatorTemplate, setIndicatorTemplate] = useState<any | null>(null);
   const [conditionPreset, setConditionPreset] = useState<string | undefined>(undefined);
   const [indicatorModalOpen, setIndicatorModalOpen] = useState(false);
   const [conditionModalOpen, setConditionModalOpen] = useState(false);
   const [activeDrag, setActiveDrag] = useState<any | null>(null);
+
+  // Update ownerId when user changes
+  useEffect(() => {
+    if (user?.uid && strategy.ownerId === 'anonymous') {
+      setStrategy(prev => ({ ...prev, ownerId: user.uid }));
+    }
+  }, [user, strategy.ownerId]);
+
+  // Load strategy if ID is provided in URL
+  useEffect(() => {
+    const loadStrategy = async () => {
+      const strategyId = searchParams.get('id');
+      if (!strategyId) return;
+
+      setIsLoading(true);
+      try {
+        const loadedStrategy = await strategyService.getStrategyDefinition(strategyId);
+        setStrategy(loadedStrategy);
+        toast.success("Strategy loaded successfully!");
+      } catch (error) {
+        console.error('Error loading strategy:', error);
+        toast.error("Failed to load strategy");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadStrategy();
+  }, [searchParams]);
 
   // Indicator management
   const addIndicator = (indicator: IndicatorDef) => {
@@ -273,6 +309,17 @@ strategy.exit("StopLoss", "Long", stop=strategy.position_avg_price * (1 - ${stra
     navigator.clipboard.writeText(pineScript);
     toast.success("Pine Script copied to clipboard!");
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading strategy...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

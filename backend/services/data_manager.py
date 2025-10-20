@@ -36,6 +36,13 @@ def _ensure_datetime(dt: Any) -> datetime:
 
 
 def _standardize_df(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Normalize DataFrame to standard OHLCV format with timezone-naive datetimes.
+    
+    This is the SINGLE SOURCE OF TRUTH for datetime normalization.
+    All datetimes are converted to timezone-naive to prevent 
+    'offset-naive vs offset-aware' errors in downstream calculations.
+    """
     # Normalize columns to ['date','open','high','low','close','volume']
     rename_map = {
         "Date": "date", "Datetime": "date", "date": "date",
@@ -52,12 +59,24 @@ def _standardize_df(df: pd.DataFrame) -> pd.DataFrame:
         else:
             df.index.name = "date"
             df = df.reset_index()
-    df["date"] = pd.to_datetime(df["date"]).dt.tz_localize(None)
+    
+    # CRITICAL: Convert all datetimes to timezone-naive
+    # This handles both timezone-aware and timezone-naive inputs
+    df["date"] = pd.to_datetime(df["date"])
+    
+    # Remove timezone info if present (convert to naive)
+    if df["date"].dt.tz is not None:
+        # If timezone-aware, convert to UTC first, then remove timezone
+        df["date"] = df["date"].dt.tz_convert('UTC').dt.tz_localize(None)
+    
+    # Ensure numeric columns
     for col in ["open", "high", "low", "close"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
     if "volume" in df.columns:
         df["volume"] = pd.to_numeric(df["volume"], errors="coerce").fillna(0).astype(float)
+    
+    # Select and sort
     df = df[[c for c in ["date", "open", "high", "low", "close", "volume"] if c in df.columns]]
     df = df.sort_values("date").drop_duplicates(subset=["date"]).reset_index(drop=True)
     return df
@@ -151,10 +170,24 @@ async def _fetch_yahoo(symbol: str, timeframe: str, start_date: datetime, end_da
 
 
 def _is_fresh(last_updated: Optional[datetime], timeframe: str) -> bool:
+    """
+    Check if cached data is still fresh based on timeframe.
+    Handles both timezone-aware and timezone-naive datetime objects.
+    """
     if not last_updated:
         return False
+    
     days = FRESHNESS_BY_TIMEFRAME_DAYS.get(timeframe, 1)
-    return datetime.utcnow() - last_updated <= timedelta(days=days)
+    
+    # Ensure both datetimes are timezone-naive for comparison
+    now = datetime.utcnow()
+    
+    # If last_updated is timezone-aware, convert to naive UTC
+    if hasattr(last_updated, 'tzinfo') and last_updated.tzinfo is not None:
+        # Convert to UTC then remove timezone
+        last_updated = last_updated.replace(tzinfo=None)
+    
+    return now - last_updated <= timedelta(days=days)
 
 
 async def get_data(symbol: str, start_date: str, end_date: str, timeframe: str = "1d") -> pd.DataFrame:

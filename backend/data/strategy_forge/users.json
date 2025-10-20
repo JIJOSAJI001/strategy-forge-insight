@@ -1,0 +1,82 @@
+[
+  {
+    "firebaseUid": "MIBjRMNkuUZ3m431UyBclGnpuWi1",
+    "uid": "MIBjRMNkuUZ3m431UyBclGnpuWi1",
+    "email": "admin@gmail.com",
+    "displayName": "Admin User",
+    "role": "admin",
+    "status": "active",
+    "permissions": {},
+    "profile": {
+      "firstName": "",
+      "lastName": "",
+      "phone": null,
+      "avatar": null,
+      "preferences": {}
+    },
+    "createdAt": "2025-09-28T05:08:51.093725+00:00",
+    "lastLogin": "2025-10-08T03:38:02.032424+00:00",
+    "updatedAt": "2025-10-08T05:03:54.672433+00:00",
+    "_id": "68e5f0b9da81b0e8e788cee4"
+  },
+  {
+    "firebaseUid": "G6TgYbAWz9fTerPj1haICY411iw1",
+    "uid": "G6TgYbAWz9fTerPj1haICY411iw1",
+    "email": "jijosaji2001@gmail.com",
+    "displayName": "Jijo Saji",
+    "role": "retail",
+    "status": "active",
+    "permissions": {},
+    "profile": {
+      "firstName": "Jijo",
+      "lastName": "Saji",
+      "phone": null,
+      "avatar": null,
+      "preferences": {}
+    },
+    "createdAt": "2025-09-28T05:12:06.739182+00:00",
+    "lastLogin": "2025-10-07T10:31:48.379333+00:00",
+    "updatedAt": "2025-10-08T05:03:53.756267+00:00",
+    "_id": "68e5f0b9da81b0e8e788cee5"
+  },
+  {
+    "firebaseUid": "Dv4AiAxnfDMa1oUYAWrwx9iv6xD3",
+    "uid": "Dv4AiAxnfDMa1oUYAWrwx9iv6xD3",
+    "email": "jijosaji003@gmail.com",
+    "displayName": "Jijo Saji",
+    "role": "retail",
+    "status": "active",
+    "permissions": {},
+    "profile": {
+      "firstName": "Jijo",
+      "lastName": "Saji",
+      "phone": null,
+      "avatar": null,
+      "preferences": {}
+    },
+    "createdAt": "2025-09-28T06:07:17.127386+00:00",
+    "lastLogin": "2025-10-08T03:37:18.058931+00:00",
+    "updatedAt": "2025-10-08T05:03:53.773089+00:00",
+    "_id": "68e5f0b9da81b0e8e788cee6"
+  },
+  {
+    "firebaseUid": "qvN9B4uFjteuRx3smpjSg4kTPF33",
+    "uid": "qvN9B4uFjteuRx3smpjSg4kTPF33",
+    "email": "akhiesgps@mca.ajce.in",
+    "displayName": "Akhilesh",
+    "role": "retail",
+    "status": "active",
+    "permissions": {},
+    "profile": {
+      "firstName": "Akhilesh",
+      "lastName": "",
+      "phone": null,
+      "avatar": null,
+      "preferences": {}
+    },
+    "createdAt": "2025-10-06T17:49:28.375082+00:00",
+    "lastLogin": "2025-10-07T10:15:50.086982+00:00",
+    "updatedAt": "2025-10-08T05:03:53.789663+00:00",
+    "_id": "68e5f0b9da81b0e8e788cee7"
+  }
+]

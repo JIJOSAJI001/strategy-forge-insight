@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 type User = {
   uid: string;
@@ -20,6 +22,7 @@ type User = {
 
 const UserManagement = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [query, setQuery] = useState("");
@@ -27,11 +30,13 @@ const UserManagement = () => {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return users.filter(u => {
-      const matchesQuery = !q || (u.email || "").toLowerCase().includes(q) || (u.displayName || "").toLowerCase().includes(q) || u.uid.toLowerCase().includes(q);
-      const matchesRole = roleFilter === "all" || u.role === roleFilter;
-      return matchesQuery && matchesRole;
-    });
+    return users
+      .filter(u => u.role !== "admin") // Hide admin users
+      .filter(u => {
+        const matchesQuery = !q || (u.email || "").toLowerCase().includes(q) || (u.displayName || "").toLowerCase().includes(q) || u.uid.toLowerCase().includes(q);
+        const matchesRole = roleFilter === "all" || u.role === roleFilter;
+        return matchesQuery && matchesRole;
+      });
   }, [users, query, roleFilter]);
 
   const refresh = async () => {
@@ -92,17 +97,8 @@ const UserManagement = () => {
     } finally { setLoading(false); }
   };
 
-  const onResetPassword = async (uid: string) => {
-    setLoading(true);
-    try {
-      const { resetLink } = await usersService.resetPassword(uid);
-      await navigator.clipboard.writeText(resetLink);
-      toast({ title: "Password reset link copied", description: "Send to the user securely." });
-    } catch (e: any) {
-      toast({ title: "Could not generate reset link", description: e?.message || String(e), variant: "destructive" });
-    } finally { setLoading(false); }
-  };
-
+  // Removed reset password - admin cannot change user passwords
+  
   const onRevokeSessions = async (uid: string) => {
     setLoading(true);
     try {
@@ -116,7 +112,18 @@ const UserManagement = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">User Management</h1>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/admin-dashboard')}
+            className="text-[#9CA3AF] hover:text-[#F9FAFB]"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <h1 className="text-3xl font-bold text-[#F9FAFB]">User Management</h1>
+        </div>
         <div className="flex items-center gap-2">
           <Input placeholder="Search by name or email" value={query} onChange={(e) => setQuery(e.target.value)} className="w-64" />
           <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v)}>
@@ -185,7 +192,6 @@ const UserManagement = () => {
                     <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" onClick={() => onResetPassword(u.uid)}>Reset Password</Button>
                 <Button variant="outline" onClick={() => onRevokeSessions(u.uid)}>Revoke Sessions</Button>
                 {u.active === false ? (
                   <Button variant="secondary" onClick={() => onUpdate(u.uid, { active: true })}>Activate</Button>
