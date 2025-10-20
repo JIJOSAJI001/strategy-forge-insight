@@ -1,0 +1,19 @@
+services:
+  # Backend API Service
+  - type: web
+    name: strategy-forge-backend
+    env: python
+    region: oregon
+    buildCommand: cd Backend && pip install -r requirements.txt
+    startCommand: cd Backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PORT
+        generateValue: true
+    # Add your environment variables in Render Dashboard:
+    # - MONGODB_URI
+    # - REDIS_URL
+    # - FIREBASE_CREDENTIALS (if needed)
+    # - SECRET_KEY
+    # - Any other sensitive config
