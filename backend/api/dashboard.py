@@ -168,12 +168,13 @@ async def get_dashboard_metrics(user_info: dict = Depends(verify_firebase_token)
 
 
 @router.get("/dashboard/recent-backtests")
-async def get_recent_backtests(user_id: str, limit: int = 10):
+async def get_recent_backtests(user_info: dict = Depends(verify_firebase_token), limit: int = 10):
     """
     Get recent backtests for a user
     Optimized with caching and parallel queries
     """
     start_time = time.time()
+    user_id = user_info.get("uid")
     
     try:
         # Check cache first
