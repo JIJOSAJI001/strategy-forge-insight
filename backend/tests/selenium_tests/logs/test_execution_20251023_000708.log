@@ -1,0 +1,23 @@
+2025-10-23 00:07:09,222 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 00:07:09,222 - selenium_tests.conftest - INFO - Starting Selenium Test Suite - Strategy Forge Insight
+2025-10-23 00:07:09,223 - selenium_tests.conftest - INFO - Test Session Started: 2025-10-23 00:07:09
+2025-10-23 00:07:09,223 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 00:07:09,223 - selenium_tests.conftest - INFO - Initializing Chrome WebDriver...
+2025-10-23 00:07:09,223 - selenium_tests.conftest - INFO - Detected AMD64 architecture
+2025-10-23 00:07:09,223 - selenium_tests.conftest - INFO - Using webdriver-manager
+2025-10-23 00:07:09,228 - WDM - INFO - ====== WebDriver manager ======
+2025-10-23 00:07:11,612 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-10-23 00:07:11,752 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-10-23 00:07:11,873 - WDM - INFO - There is no [win64] chromedriver "141.0.7390.122" for browser google-chrome "141.0.7390" in cache
+2025-10-23 00:07:11,874 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-10-23 00:07:12,173 - WDM - INFO - WebDriver version 141.0.7390.122 selected
+2025-10-23 00:07:12,177 - WDM - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/141.0.7390.122/win32/chromedriver-win32.zip
+2025-10-23 00:07:12,177 - WDM - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/141.0.7390.122/win32/chromedriver-win32.zip
+2025-10-23 00:07:12,305 - WDM - INFO - Driver downloading response is 200
+2025-10-23 00:07:13,031 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-10-23 00:07:14,650 - WDM - INFO - Driver has been saved in cache [C:\Users\user\.wdm\drivers\chromedriver\win64\141.0.7390.122]
+2025-10-23 00:07:14,705 - selenium_tests.conftest - ERROR - Failed to initialize ChromeDriver: [WinError 193] %1 is not a valid Win32 application
+2025-10-23 00:07:14,705 - selenium_tests.conftest - INFO - Please ensure you have Google Chrome installed
+2025-10-23 00:07:15,105 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 00:07:15,105 - selenium_tests.conftest - INFO - Test Session Completed
+2025-10-23 00:07:15,105 - selenium_tests.conftest - INFO - ================================================================================

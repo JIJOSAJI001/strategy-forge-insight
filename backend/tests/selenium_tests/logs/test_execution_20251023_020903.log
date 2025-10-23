@@ -1,0 +1,56 @@
+2025-10-23 02:09:05,451 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 02:09:05,451 - selenium_tests.conftest - INFO - Starting Selenium Test Suite - Strategy Forge Insight
+2025-10-23 02:09:05,452 - selenium_tests.conftest - INFO - Test Session Started: 2025-10-23 02:09:05
+2025-10-23 02:09:05,452 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 02:09:05,453 - selenium_tests.conftest - INFO - Initializing Chrome WebDriver...
+2025-10-23 02:09:05,453 - selenium_tests.conftest - INFO - Detected AMD64 architecture
+2025-10-23 02:09:05,454 - selenium_tests.conftest - INFO - Using local ChromeDriver: D:\strategy-forge-insight\Backend\tests\selenium_tests\drivers\chromedriver-win64\chromedriver.exe
+2025-10-23 02:09:07,397 - selenium_tests.conftest - INFO - WebDriver initialized successfully
+2025-10-23 02:09:07,401 - selenium_tests.test_4_strategy_library - INFO - ================================================================================
+2025-10-23 02:09:07,401 - selenium_tests.test_4_strategy_library - INFO - Starting Test Case 4: Strategy Library Test
+2025-10-23 02:09:07,401 - selenium_tests.test_4_strategy_library - INFO - ================================================================================
+2025-10-23 02:09:07,401 - selenium_tests.test_4_strategy_library - INFO - Pre-requisite: Logging in to application
+2025-10-23 02:09:08,432 - utils - INFO - Page loaded completely
+2025-10-23 02:09:08,737 - utils - INFO - Element clickable: //button[contains(text(), 'Login') or contains(text(), 'Sign Up')]
+2025-10-23 02:09:08,935 - utils - INFO - Clicked: Login button
+2025-10-23 02:09:09,014 - utils - INFO - Element found: input[type='email']
+2025-10-23 02:09:09,402 - utils - INFO - Element found: input[type='password']
+2025-10-23 02:09:09,558 - utils - INFO - Element clickable: //button[@type='submit' and (contains(text(), 'Sign') or contains(text(), 'Login'))]
+2025-10-23 02:09:09,765 - utils - INFO - Clicked: Submit button
+2025-10-23 02:09:14,035 - utils - INFO - URL contains: dashboard
+2025-10-23 02:09:14,035 - selenium_tests.test_4_strategy_library - INFO - Pre-requisite completed - Login successful
+2025-10-23 02:09:14,036 - selenium_tests.test_4_strategy_library - INFO - Step 1: Navigate to strategy library page
+2025-10-23 02:09:14,583 - utils - INFO - Page loaded completely
+2025-10-23 02:09:17,820 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step1_library_page_loaded_20251023_020917.png
+2025-10-23 02:09:17,847 - selenium_tests.test_4_strategy_library - INFO - Step 2: Verify strategy library page heading
+2025-10-23 02:09:17,884 - utils - INFO - Element found: //*[contains(text(), 'Strateg') or contains(text(), 'Library')]
+2025-10-23 02:09:18,117 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step2_library_heading_20251023_020917.png
+2025-10-23 02:09:18,122 - selenium_tests.test_4_strategy_library - INFO - Step 3: Verify strategy cards are displayed
+2025-10-23 02:09:28,187 - utils - INFO - Found 0 elements matching: //*[contains(@class, 'StrategyCard')]
+2025-10-23 02:09:28,217 - utils - INFO - Found 6 elements matching: //*[contains(@class, 'card') or contains(@class, 'Card')]
+2025-10-23 02:09:28,516 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step3_strategy_cards_20251023_020928.png
+2025-10-23 02:09:28,524 - selenium_tests.test_4_strategy_library - INFO - Step 4: Verify search input field
+2025-10-23 02:09:28,550 - utils - INFO - Found 1 elements matching: //input[@type='search' or @type='text' or contains(@placeholder, 'search') or contains(@placeholder, 'Search') or contains(@placeholder, 'filter')]
+2025-10-23 02:09:28,761 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step4_search_input_20251023_020928.png
+2025-10-23 02:09:28,764 - selenium_tests.test_4_strategy_library - INFO - Step 5: Test search functionality
+2025-10-23 02:09:28,780 - utils - INFO - Found 1 elements matching: //input[@type='search' or @type='text' or contains(@placeholder, 'search') or contains(@placeholder, 'Search')]
+2025-10-23 02:09:28,880 - utils - INFO - Sent keys to: search field
+2025-10-23 02:09:31,212 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step5_search_test_20251023_020930.png
+2025-10-23 02:09:31,223 - selenium_tests.test_4_strategy_library - INFO - Step 6: Verify filter or category options
+2025-10-23 02:09:41,242 - utils - INFO - Found 0 elements matching: //button[contains(@class, 'filter') or contains(@class, 'category') or contains(@class, 'tab')]
+2025-10-23 02:09:51,285 - utils - INFO - Found 0 elements matching: select
+2025-10-23 02:10:01,346 - utils - INFO - Found 0 elements matching: //*[contains(@role, 'tab') or contains(@class, 'tab')]
+2025-10-23 02:10:01,557 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step6_filter_options_20251023_021001.png
+2025-10-23 02:10:01,560 - selenium_tests.test_4_strategy_library - INFO - Step 7: Verify strategy card displays key information
+2025-10-23 02:10:01,577 - utils - INFO - Found 6 elements matching: //*[contains(@class, 'card') or contains(@class, 'Card')]
+2025-10-23 02:10:01,592 - utils - INFO - Found 7 elements matching: //h1 | //h2 | //h3 | //h4
+2025-10-23 02:10:01,610 - utils - INFO - Found 23 elements matching: button
+2025-10-23 02:10:11,670 - utils - INFO - Found 0 elements matching: //*[contains(@class, 'badge') or contains(@class, 'Badge')]
+2025-10-23 02:10:11,878 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step7_card_details_20251023_021011.png
+2025-10-23 02:10:11,885 - selenium_tests.test_4_strategy_library - INFO - ================================================================================
+2025-10-23 02:10:11,885 - selenium_tests.test_4_strategy_library - INFO - ================================================================================
+2025-10-23 02:10:11,890 - selenium_tests.conftest - INFO - Closing WebDriver...
+2025-10-23 02:10:14,409 - selenium_tests.conftest - INFO - WebDriver closed
+2025-10-23 02:10:14,410 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 02:10:14,411 - selenium_tests.conftest - INFO - Test Session Completed
+2025-10-23 02:10:14,411 - selenium_tests.conftest - INFO - ================================================================================

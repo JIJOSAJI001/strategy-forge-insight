@@ -50,12 +50,21 @@ class MongoDB:
             await cls.database["backtests"].create_index([("user_id", 1), ("metrics.total_return", -1)])
             await cls.database["backtests"].create_index([("user_id", 1)])
             
-            # Indexes for strategies collection
+            # Indexes for strategies collection (simple strategies)
+            await cls.database["strategies"].create_index([("author", 1)])
+            await cls.database["strategies"].create_index([("visibility", 1)])
+            await cls.database["strategies"].create_index([("author", 1), ("visibility", 1)])
+            await cls.database["strategies"].create_index([("author", 1), ("createdAt", -1)])
+            
+            # Indexes for drag_drop_strategies collection
             await cls.database["drag_drop_strategies"].create_index([("ownerId", 1)])
+            await cls.database["drag_drop_strategies"].create_index([("visibility", 1)])
+            await cls.database["drag_drop_strategies"].create_index([("ownerId", 1), ("visibility", 1)])
             await cls.database["drag_drop_strategies"].create_index([("ownerId", 1), ("createdAt", -1)])
             
             # Indexes for users collection
             await cls.database["users"].create_index([("uid", 1)], unique=True)
+            await cls.database["users"].create_index([("firebaseUid", 1)], unique=True)
             await cls.database["users"].create_index([("email", 1)])
             
             print("✅ Database indexes created successfully")

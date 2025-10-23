@@ -7,10 +7,12 @@ import os
 import motor.motor_asyncio
 from dotenv import load_dotenv
 from datetime import datetime
+import time
 
 load_dotenv()
 
 from auth_mongodb import verify_firebase_token, require_role
+from core.redis_setup import RedisCache
 
 # Bearer scheme for optional authentication
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -426,7 +428,10 @@ async def get_strategies(request: Request, creds: Optional[HTTPAuthorizationCred
     Filters based on visibility:
     - Public strategies: visible to everyone
     - Private strategies: only visible to the owner
+    **OPTIMIZED with Redis caching for 5 minutes**
     """
+    start_time = time.time()
+    
     try:
         # Try to get user info from token (optional)
         current_user_id = None
@@ -438,67 +443,115 @@ async def get_strategies(request: Request, creds: Optional[HTTPAuthorizationCred
             except:
                 print("⚠️ Token verification failed, showing only public strategies")
         
+        # **CACHE KEY: Different cache for each user (private+public) vs anonymous (public only)**
+        cache_key = f"strategies:user:{current_user_id}" if current_user_id else "strategies:public"
+        
+        # Try to get from cache first
+        cached_data = await RedisCache.get(cache_key)
+        if cached_data:
+            elapsed = (time.time() - start_time) * 1000
+            print(f"⚡ Strategies from cache in {elapsed:.0f}ms ({len(cached_data)} strategies)")
+            return cached_data
+        
         # Fetch from both collections
         collection_simple, client1 = await get_mongodb_collection("strategies")
         collection_defs, client2 = await get_mongodb_collection("drag_drop_strategies")
         
         strategies = []
         
-        # Get simple strategies with visibility filter
-        async for strategy in collection_simple.find():
+        # **OPTIMIZED: Use projection to fetch only needed fields**
+        projection_simple = {
+            "_id": 1, "title": 1, "name": 1, "description": 1,
+            "performance": 1, "sharpe": 1, "drawdown": 1, "winrate": 1,
+            "tags": 1, "downloads": 1, "rating": 1, "category": 1,
+            "difficulty": 1, "author": 1, "visibility": 1, "lastUpdated": 1,
+            "createdAt": 1, "updatedAt": 1, "status": 1
+        }
+        
+        # Build query filter
+        query_simple = {}
+        if not current_user_id:
+            # Anonymous: only public
+            query_simple["visibility"] = "public"
+        else:
+            # Authenticated: public OR owned by user
+            query_simple["$or"] = [
+                {"visibility": "public"},
+                {"author": current_user_id}
+            ]
+        
+        # Get simple strategies with visibility filter and projection
+        async for strategy in collection_simple.find(query_simple, projection_simple).limit(100):
             visibility = strategy.get("visibility", "private")
             owner_id = strategy.get("author", "")
             
-            # Apply visibility rules: public strategies OR owner's private strategies
-            if visibility == "public" or (current_user_id and owner_id == current_user_id):
-                strategy["_id"] = str(strategy["_id"])
-                # Ensure name field exists (use title if name doesn't exist)
-                if "name" not in strategy and "title" in strategy:
-                    strategy["name"] = strategy["title"]
-                # Add default fields if missing
-                if "userId" not in strategy:
-                    strategy["userId"] = owner_id
-                if "isPublic" not in strategy:
-                    strategy["isPublic"] = visibility == "public"
-                strategies.append(strategy)
+            strategy["_id"] = str(strategy["_id"])
+            # Ensure name field exists (use title if name doesn't exist)
+            if "name" not in strategy and "title" in strategy:
+                strategy["name"] = strategy["title"]
+            # Add default fields if missing
+            if "userId" not in strategy:
+                strategy["userId"] = owner_id
+            if "isPublic" not in strategy:
+                strategy["isPublic"] = visibility == "public"
+            strategies.append(strategy)
         
-        # Get drag-drop strategies with visibility filter
-        async for strategy in collection_defs.find():
+        # **OPTIMIZED: Projection for drag-drop strategies**
+        projection_defs = {
+            "_id": 1, "name": 1, "description": 1, "timeframe": 1,
+            "ownerId": 1, "visibility": 1, "updatedAt": 1, "createdAt": 1
+        }
+        
+        # Build query filter for drag-drop
+        query_defs = {}
+        if not current_user_id:
+            query_defs["visibility"] = "public"
+        else:
+            query_defs["$or"] = [
+                {"visibility": "public"},
+                {"ownerId": current_user_id}
+            ]
+        
+        # Get drag-drop strategies with visibility filter and projection
+        async for strategy in collection_defs.find(query_defs, projection_defs).limit(100):
             visibility = strategy.get("visibility", "private")
             owner_id = strategy.get("ownerId", "")
             
-            # Apply visibility rules: public strategies OR owner's private strategies
-            if visibility == "public" or (current_user_id and owner_id == current_user_id):
-                strategy_response = {
-                    "_id": str(strategy["_id"]),
-                    "title": strategy.get("name", "Untitled Strategy"),
-                    "name": strategy.get("name", "Untitled Strategy"),
-                    "description": strategy.get("description", ""),
-                    "performance": 0.0,  # TODO: Calculate from backtest results
-                    "sharpe": 0.0,
-                    "drawdown": 0.0,
-                    "winrate": 0.0,
-                    "tags": [strategy.get("timeframe", ""), visibility],
-                    "downloads": 0,
-                    "rating": 0.0,
-                    "category": "Custom",
-                    "difficulty": "Intermediate",
-                    "author": owner_id,
-                    "userId": owner_id,
-                    "isPublic": visibility == "public",
-                    "lastUpdated": strategy.get("updatedAt", ""),
-                    "createdAt": strategy.get("createdAt", ""),
-                    "updatedAt": strategy.get("updatedAt", ""),
-                    "status": "active"
-                }
-                strategies.append(strategy_response)
+            strategy_response = {
+                "_id": str(strategy["_id"]),
+                "title": strategy.get("name", "Untitled Strategy"),
+                "name": strategy.get("name", "Untitled Strategy"),
+                "description": strategy.get("description", ""),
+                "performance": 0.0,  # TODO: Calculate from backtest results
+                "sharpe": 0.0,
+                "drawdown": 0.0,
+                "winrate": 0.0,
+                "tags": [strategy.get("timeframe", ""), visibility],
+                "downloads": 0,
+                "rating": 0.0,
+                "category": "Custom",
+                "difficulty": "Intermediate",
+                "author": owner_id,
+                "userId": owner_id,
+                "isPublic": visibility == "public",
+                "lastUpdated": strategy.get("updatedAt", ""),
+                "createdAt": strategy.get("createdAt", ""),
+                "updatedAt": strategy.get("updatedAt", ""),
+                "status": "active"
+            }
+            strategies.append(strategy_response)
         
         client1.close()
         client2.close()
         
-        print(f"✅ Returning {len(strategies)} strategies (user: {current_user_id or 'anonymous'})")
+        # **CACHE the result for 5 minutes (300 seconds)**
+        await RedisCache.set(cache_key, strategies, ttl=300)
+        
+        elapsed = (time.time() - start_time) * 1000
+        print(f"✅ Returning {len(strategies)} strategies in {elapsed:.0f}ms (cached for 5 min, user: {current_user_id or 'anonymous'})")
         return strategies
     except Exception as e:
+        print(f"❌ Error fetching strategies: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch strategies: {str(e)}")
 
 @router.get("/strategies/{strategy_id}", response_model=StrategyResponse)

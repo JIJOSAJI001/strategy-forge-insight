@@ -1,0 +1,167 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Selenium Test Report - Strategy Forge Insight</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background-color: #f5f5f5;
+            }
+            .header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
+            .test-case {
+                background: white;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .test-case-header {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 5px;
+                margin-bottom: 15px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 12px;
+                text-align: left;
+            }
+            th {
+                background-color: #667eea;
+                color: white;
+                font-weight: bold;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            .pass {
+                color: #28a745;
+                font-weight: bold;
+            }
+            .fail {
+                color: #dc3545;
+                font-weight: bold;
+            }
+            .info {
+                color: #17a2b8;
+            }
+            .screenshot {
+                max-width: 200px;
+                margin: 5px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Selenium Test Execution Report</h1>
+            <p><strong>Project:</strong> Strategy Forge Insight</p>
+            <p><strong>Execution Date:</strong> 2025-10-23 00:48:51</p>
+            <p><strong>Total Test Cases:</strong> 1</p>
+        </div>
+    
+        <div class="test-case">
+            <div class="test-case-header">
+                <h2>Test 1: Login Test Case</h2>
+                <p><strong>Test Priority:</strong> High</p>
+                <p><strong>Test Execution Date:</strong> 2025-10-23 00:48:11</p>
+                <p><strong>Status:</strong> <span class="pass">Pass</span></p>
+                <p><strong>Steps Passed:</strong> 7 | <strong>Steps Failed:</strong> 0</p>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Step</th>
+                        <th>Test Step</th>
+                        <th>Test Data</th>
+                        <th>Expected Result</th>
+                        <th>Actual Result</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>1</td>
+                        <td>Navigate to application URL</td>
+                        <td>http://localhost:8080</td>
+                        <td>Landing page loads successfully, Login/Sign Up button is visible</td>
+                        <td>Landing page loaded successfully. Page title: Growmore</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>2</td>
+                        <td>Click 'Login / Sign Up' button to open authentication modal</td>
+                        <td>Click 'Login / Sign Up' button</td>
+                        <td>Authentication modal opens with login form visible</td>
+                        <td>Authentication modal opened successfully. Modal visible: True</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>3</td>
+                        <td>Enter email address in the email input field</td>
+                        <td>jijosaji003@gmail.com</td>
+                        <td>Email address is entered successfully in the email field</td>
+                        <td>Email entered successfully: jijosaji003@gmail.com</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>4</td>
+                        <td>Enter password in the password input field</td>
+                        <td>Password: ********</td>
+                        <td>Password is entered successfully in the password field</td>
+                        <td>Password entered successfully. Field has 9 characters</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>5</td>
+                        <td>Click submit button to authenticate</td>
+                        <td>Click 'Sign in' or 'Login' button</td>
+                        <td>Login request is submitted successfully</td>
+                        <td>Login form submitted successfully</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>6</td>
+                        <td>Verify successful authentication and dashboard redirect</td>
+                        <td>Wait for dashboard page to load</td>
+                        <td>User is redirected to dashboard, welcome message is displayed</td>
+                        <td>Login successful! Redirected to: http://localhost:8080/dashboard. Dashboard loaded: True</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>7</td>
+                        <td>Verify dashboard UI elements are present and visible</td>
+                        <td>Check for key dashboard components</td>
+                        <td>Dashboard metrics, charts, and navigation are visible</td>
+                        <td>Dashboard elements verified: Metrics cards: 0, Buttons: 25</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                </tbody>
+            </table>
+        <h3>Screenshots:</h3><div><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step1_landing_page_20251023_004818.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step2_auth_modal_opened_20251023_004822.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step3_email_entered_20251023_004824.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step4_password_entered_20251023_004825.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step5_login_submitted_20251023_004828.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step6_login_successful_20251023_004833.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step7_dashboard_elements_20251023_004843.png" class="screenshot" /></div></div>
+    </body>
+    </html>
+    

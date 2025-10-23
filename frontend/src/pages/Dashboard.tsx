@@ -88,31 +88,46 @@ export default function Dashboard() {
 
         // Fetch metrics with user ID
         const userId = user?.uid;
-        const metricsResponse = await fetch(
-          `${API_BASE_URL}/api/dashboard/metrics${userId ? `?user_id=${userId}` : ''}`, 
-          { headers }
-        );
-        if (metricsResponse.ok) {
-          const metricsData = await metricsResponse.json();
+        
+        // **OPTIMIZED: Fetch all data in parallel using Promise.allSettled**
+        // This prevents one slow request from blocking others
+        const [metricsResult, backtestsResult] = await Promise.allSettled([
+          fetch(
+            `${API_BASE_URL}/api/dashboard/metrics${userId ? `?user_id=${userId}` : ''}`, 
+            { headers }
+          ),
+          fetch(
+            `${API_BASE_URL}/api/dashboard/recent-backtests`,
+            { headers }
+          )
+        ]);
+
+        // Process metrics response
+        if (metricsResult.status === 'fulfilled' && metricsResult.value.ok) {
+          const metricsData = await metricsResult.value.json();
           const metricsWithIcons = metricsData.metrics.map((m: any, index: number) => ({
             ...m,
             icon: [Star, Play, BarChart3, Shield][index]
           }));
           setMetrics(metricsWithIcons);
+        } else {
+          console.error('Metrics fetch failed:', metricsResult);
+          setMetrics([]);
         }
 
-        // Fetch recent backtests
-        const backtestsResponse = await fetch(
-          `${API_BASE_URL}/api/dashboard/recent-backtests${userId ? `?user_id=${userId}` : ''}`,
-          { headers }
-        );
-        if (backtestsResponse.ok) {
-          const backtestsData = await backtestsResponse.json();
+        // Process backtests response
+        if (backtestsResult.status === 'fulfilled' && backtestsResult.value.ok) {
+          const backtestsData = await backtestsResult.value.json();
           setRecentBacktests(backtestsData.backtests || []);
+        } else {
+          console.error('Backtests fetch failed:', backtestsResult);
+          setRecentBacktests([]);
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
         // Keep empty arrays on error
+        setMetrics([]);
+        setRecentBacktests([]);
       } finally {
         setLoading(false);
       }

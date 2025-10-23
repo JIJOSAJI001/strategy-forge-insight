@@ -1,0 +1,144 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Selenium Test Report - Strategy Forge Insight</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background-color: #f5f5f5;
+            }
+            .header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
+            .test-case {
+                background: white;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .test-case-header {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 5px;
+                margin-bottom: 15px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 12px;
+                text-align: left;
+            }
+            th {
+                background-color: #667eea;
+                color: white;
+                font-weight: bold;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            .pass {
+                color: #28a745;
+                font-weight: bold;
+            }
+            .fail {
+                color: #dc3545;
+                font-weight: bold;
+            }
+            .info {
+                color: #17a2b8;
+            }
+            .screenshot {
+                max-width: 200px;
+                margin: 5px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Selenium Test Execution Report</h1>
+            <p><strong>Project:</strong> Strategy Forge Insight</p>
+            <p><strong>Execution Date:</strong> 2025-10-23 00:16:08</p>
+            <p><strong>Total Test Cases:</strong> 1</p>
+        </div>
+    
+        <div class="test-case">
+            <div class="test-case-header">
+                <h2>Test 1: Login Test Case</h2>
+                <p><strong>Test Priority:</strong> High</p>
+                <p><strong>Test Execution Date:</strong> 2025-10-23 00:15:59</p>
+                <p><strong>Status:</strong> <span class="fail">Fail</span></p>
+                <p><strong>Steps Passed:</strong> 0 | <strong>Steps Failed:</strong> 1</p>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Step</th>
+                        <th>Test Step</th>
+                        <th>Test Data</th>
+                        <th>Expected Result</th>
+                        <th>Actual Result</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>1</td>
+                        <td>Navigate to application URL</td>
+                        <td>http://localhost:8081</td>
+                        <td>Landing page loads successfully, Login/Sign Up button is visible</td>
+                        <td>Failed to load landing page: Message: unknown error: net::ERR_CONNECTION_REFUSED
+  (Session info: chrome=141.0.7390.108)
+Stacktrace:
+	GetHandleVerifier [0x0x7ff6ba47e8e5+80021]
+	GetHandleVerifier [0x0x7ff6ba47e940+80112]
+	(No symbol) [0x0x7ff6ba20060f]
+	(No symbol) [0x0x7ff6ba1fd0bf]
+	(No symbol) [0x0x7ff6ba1edae9]
+	(No symbol) [0x0x7ff6ba1ef94e]
+	(No symbol) [0x0x7ff6ba1ee0d2]
+	(No symbol) [0x0x7ff6ba1ed859]
+	(No symbol) [0x0x7ff6ba1ed51d]
+	(No symbol) [0x0x7ff6ba1eb08c]
+	(No symbol) [0x0x7ff6ba1eb91c]
+	(No symbol) [0x0x7ff6ba2046da]
+	(No symbol) [0x0x7ff6ba2aa47e]
+	(No symbol) [0x0x7ff6ba28122a]
+	(No symbol) [0x0x7ff6ba2a968a]
+	(No symbol) [0x0x7ff6ba281003]
+	(No symbol) [0x0x7ff6ba2495d1]
+	(No symbol) [0x0x7ff6ba24a3f3]
+	GetHandleVerifier [0x0x7ff6ba73dc7d+2960429]
+	GetHandleVerifier [0x0x7ff6ba737f3a+2936554]
+	GetHandleVerifier [0x0x7ff6ba758977+3070247]
+	GetHandleVerifier [0x0x7ff6ba4983ce+185214]
+	GetHandleVerifier [0x0x7ff6ba49fe1f+216527]
+	GetHandleVerifier [0x0x7ff6ba487b24+117460]
+	GetHandleVerifier [0x0x7ff6ba487cdf+117903]
+	GetHandleVerifier [0x0x7ff6ba46dbb8+11112]
+	BaseThreadInitThunk [0x0x7ffa2ad3e8d7+23]
+	RtlUserThreadStart [0x0x7ffa2b8ec53c+44]
+</td>
+                        <td class="fail">Fail</td>
+                    </tr>
+            
+                </tbody>
+            </table>
+        </div>
+    </body>
+    </html>
+    

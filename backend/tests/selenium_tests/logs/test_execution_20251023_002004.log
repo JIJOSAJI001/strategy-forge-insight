@@ -1,0 +1,21 @@
+2025-10-23 00:20:04,914 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 00:20:04,914 - selenium_tests.conftest - INFO - Starting Selenium Test Suite - Strategy Forge Insight
+2025-10-23 00:20:04,915 - selenium_tests.conftest - INFO - Test Session Started: 2025-10-23 00:20:04
+2025-10-23 00:20:04,915 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 00:20:04,917 - selenium_tests.conftest - INFO - Initializing Chrome WebDriver...
+2025-10-23 00:20:04,918 - selenium_tests.conftest - INFO - Detected AMD64 architecture
+2025-10-23 00:20:04,922 - selenium_tests.conftest - INFO - Using local ChromeDriver: D:\strategy-forge-insight\Backend\tests\selenium_tests\drivers\chromedriver-win64\chromedriver.exe
+2025-10-23 00:20:06,606 - selenium_tests.conftest - INFO - WebDriver initialized successfully
+2025-10-23 00:20:06,609 - selenium_tests.test_1_login - INFO - ================================================================================
+2025-10-23 00:20:06,610 - selenium_tests.test_1_login - INFO - Starting Test Case 1: Login Test
+2025-10-23 00:20:06,610 - selenium_tests.test_1_login - INFO - ================================================================================
+2025-10-23 00:20:06,611 - selenium_tests.test_1_login - INFO - Step 1: Navigate to application landing page
+2025-10-23 00:20:11,964 - selenium_tests.test_1_login - ERROR - ================================================================================
+2025-10-23 00:20:11,994 - selenium_tests.test_1_login - ERROR - ================================================================================
+2025-10-23 00:20:12,172 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\test1_login_FAILED_20251023_002011.png
+2025-10-23 00:20:12,624 - selenium_tests.conftest - INFO - Closing WebDriver...
+2025-10-23 00:20:15,943 - selenium_tests.conftest - INFO - WebDriver closed
+2025-10-23 00:20:15,959 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 00:20:15,962 - selenium_tests.conftest - INFO - Test Session Completed
+2025-10-23 00:20:15,962 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 00:20:16,150 - utils - INFO - HTML report generated: D:\strategy-forge-insight\Backend\tests\selenium_tests\reports\test_case_report_20251023_002016.html

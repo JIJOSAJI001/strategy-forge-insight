@@ -140,7 +140,7 @@ async def setup_indexes():
         # backtests collection
         # ========================================
         print("\n🧪 Setting up indexes for backtests...")
-        backtests = db["backtests"]
+backtests = db["backtests"]
         
         # Index: user_id (for user's backtests)
         await backtests.create_index(

@@ -47,7 +47,7 @@ const difficulties = ["All", "Beginner", "Intermediate", "Advanced", "Expert"];
 
 export default function StrategyLibrary() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
@@ -57,7 +57,6 @@ export default function StrategyLibrary() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [previewStrategy, setPreviewStrategy] = useState<Strategy | null>(null);
-  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -67,8 +66,8 @@ export default function StrategyLibrary() {
       try {
         setLoading(true);
         
-        // Get auth token
-        const token = user ? await user.getIdToken() : null;
+        // **OPTIMIZED: Use cached token from AuthContext**
+        const token = getToken ? await getToken() : null;
         const headers: HeadersInit = {
           'Content-Type': 'application/json',
         };
@@ -97,7 +96,7 @@ export default function StrategyLibrary() {
     };
 
     fetchStrategies();
-  }, [user, API_BASE_URL]);
+  }, [getToken, API_BASE_URL]);
 
   // Handle button actions
   const handleUseStrategy = (strategyId: string) => {
@@ -106,42 +105,6 @@ export default function StrategyLibrary() {
 
   const handlePreview = (strategy: Strategy) => {
     setPreviewStrategy(strategy);
-  };
-
-  const handleImportStrategy = () => {
-    setImportDialogOpen(true);
-  };
-
-  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const text = await file.text();
-      const importedStrategy = JSON.parse(text);
-      
-      // Validate and save imported strategy
-      toast.success("Strategy imported successfully!");
-      setImportDialogOpen(false);
-      
-      // Refresh strategies list with auth
-      const token = user ? await user.getIdToken() : null;
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      const response = await fetch(`${API_BASE_URL}/api/strategies`, { headers });
-      if (response.ok) {
-        const data = await response.json();
-        setStrategies(data);
-      }
-    } catch (error) {
-      toast.error("Failed to import strategy. Please check the file format.");
-    }
   };
 
   const filteredStrategies = strategies
@@ -230,10 +193,6 @@ export default function StrategyLibrary() {
           <p className="text-muted-foreground">Discover and deploy proven trading strategies</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" size="sm" onClick={handleImportStrategy}>
-            <Upload className="h-4 w-4 mr-2" />
-            Import Strategy
-          </Button>
           <Button variant="trading" size="sm" onClick={() => navigate('/drag-drop-strategy-builder')}>
             <Plus className="h-4 w-4 mr-2" />
             Create New
@@ -388,7 +347,7 @@ export default function StrategyLibrary() {
                     <Badge key={index} variant="secondary" className="text-xs">
                       {tag}
                     </Badge>
-                  ))}
+                  ))}ooo
                   {strategy.tags.length > 3 && (
                     <Badge variant="secondary" className="text-xs">
                       +{strategy.tags.length - 3}
@@ -454,7 +413,7 @@ export default function StrategyLibrary() {
                       size="sm"
                       onClick={() => handleUseStrategy(strategy.id)}
                     >
-                      Use Strategy
+                      Use Strategyrfrfrfr
                     </Button>
                     <Button 
                       variant="outline" 
@@ -536,38 +495,6 @@ export default function StrategyLibrary() {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Import Dialog */}
-      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Import Strategy</DialogTitle>
-            <DialogDescription>
-              Upload a strategy JSON file to import it into your library.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-              <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleFileImport}
-                className="hidden"
-                id="strategy-upload"
-              />
-              <label htmlFor="strategy-upload">
-                <Button variant="outline" asChild>
-                  <span>Choose File</span>
-                </Button>
-              </label>
-              <p className="text-sm text-muted-foreground mt-2">
-                Supported formats: JSON
-              </p>
-            </div>
-          </div>
         </DialogContent>
       </Dialog>
     </div>

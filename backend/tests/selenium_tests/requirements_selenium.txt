@@ -1,0 +1,14 @@
+# Selenium Test Suite Requirements
+# Install with: pip install -r requirements_selenium.txt
+
+# Core Selenium
+selenium==4.15.2
+webdriver-manager==4.0.1
+
+# Testing Framework
+pytest==7.4.3
+pytest-html==4.1.1
+pytest-dependency==0.5.1
+
+# Utilities
+python-dotenv==1.0.0

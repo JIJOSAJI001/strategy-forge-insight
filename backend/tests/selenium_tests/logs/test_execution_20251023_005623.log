@@ -1,0 +1,96 @@
+2025-10-23 00:56:23,782 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 00:56:23,783 - selenium_tests.conftest - INFO - Starting Selenium Test Suite - Strategy Forge Insight
+2025-10-23 00:56:23,783 - selenium_tests.conftest - INFO - Test Session Started: 2025-10-23 00:56:23
+2025-10-23 00:56:23,783 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 00:56:23,783 - selenium_tests.conftest - INFO - Initializing Chrome WebDriver...
+2025-10-23 00:56:23,783 - selenium_tests.conftest - INFO - Detected AMD64 architecture
+2025-10-23 00:56:23,783 - selenium_tests.conftest - INFO - Using local ChromeDriver: D:\strategy-forge-insight\Backend\tests\selenium_tests\drivers\chromedriver-win64\chromedriver.exe
+2025-10-23 00:56:25,021 - selenium_tests.conftest - INFO - WebDriver initialized successfully
+2025-10-23 00:56:25,023 - selenium_tests.test_1_login - INFO - ================================================================================
+2025-10-23 00:56:25,024 - selenium_tests.test_1_login - INFO - Starting Test Case 1: Login Test
+2025-10-23 00:56:25,027 - selenium_tests.test_1_login - INFO - ================================================================================
+2025-10-23 00:56:25,029 - selenium_tests.test_1_login - INFO - Step 1: Navigate to application landing page
+2025-10-23 00:56:25,551 - utils - INFO - Page loaded completely
+2025-10-23 00:56:27,788 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step1_landing_page_20251023_005627.png
+2025-10-23 00:56:27,798 - selenium_tests.test_1_login - INFO - Page title: Growmore
+2025-10-23 00:56:27,809 - selenium_tests.test_1_login - INFO - Step 2: Click Login/Sign Up button to open authentication modal
+2025-10-23 00:56:27,843 - utils - INFO - Element found: //button[contains(text(), 'Login') or contains(text(), 'Sign Up')]
+2025-10-23 00:56:28,354 - utils - INFO - Scrolled to element
+2025-10-23 00:56:29,474 - utils - INFO - Clicked: Login/Sign Up button
+2025-10-23 00:56:31,518 - utils - INFO - Element found: [role='dialog']
+2025-10-23 00:56:31,679 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step2_auth_modal_opened_20251023_005631.png
+2025-10-23 00:56:31,686 - selenium_tests.test_1_login - INFO - Step 3: Enter email address in email field
+2025-10-23 00:56:31,711 - utils - INFO - Element found: input[type='email']
+2025-10-23 00:56:31,933 - utils - INFO - Sent keys to: email field
+2025-10-23 00:56:33,096 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step3_email_entered_20251023_005632.png
+2025-10-23 00:56:33,104 - selenium_tests.test_1_login - INFO - Step 4: Enter password in password field
+2025-10-23 00:56:33,128 - utils - INFO - Element found: input[type='password']
+2025-10-23 00:56:33,316 - utils - INFO - Sent keys to: password field
+2025-10-23 00:56:34,494 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step4_password_entered_20251023_005634.png
+2025-10-23 00:56:34,501 - selenium_tests.test_1_login - INFO - Step 5: Click submit button to login
+2025-10-23 00:56:34,536 - utils - INFO - Element clickable: //button[@type='submit' and (contains(text(), 'Sign') or contains(text(), 'Login'))]
+2025-10-23 00:56:34,621 - utils - INFO - Clicked: Submit button
+2025-10-23 00:56:37,888 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step5_login_submitted_20251023_005637.png
+2025-10-23 00:56:37,894 - selenium_tests.test_1_login - INFO - Step 6: Verify successful login and redirect to dashboard
+2025-10-23 00:56:37,904 - utils - INFO - URL contains: dashboard
+2025-10-23 00:56:40,914 - selenium_tests.test_1_login - INFO - Current URL: http://localhost:8080/dashboard
+2025-10-23 00:56:40,941 - utils - INFO - Element found: //*[contains(text(), 'Welcome back') or contains(text(), 'Dashboard')]
+2025-10-23 00:56:40,971 - selenium_tests.test_1_login - INFO - Welcome text: Dashboard
+2025-10-23 00:56:41,202 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step6_login_successful_20251023_005640.png
+2025-10-23 00:56:41,209 - selenium_tests.test_1_login - INFO - Step 7: Verify dashboard elements are present
+2025-10-23 00:56:51,214 - utils - INFO - Found 0 elements matching: [class*='Card']
+2025-10-23 00:56:51,244 - utils - INFO - Found 25 elements matching: button
+2025-10-23 00:56:51,474 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step7_dashboard_elements_20251023_005651.png
+2025-10-23 00:56:51,481 - selenium_tests.test_1_login - INFO - ================================================================================
+2025-10-23 00:56:51,491 - selenium_tests.test_1_login - INFO - ================================================================================
+2025-10-23 00:56:51,492 - selenium_tests.conftest - INFO - Closing WebDriver...
+2025-10-23 00:56:53,786 - selenium_tests.conftest - INFO - WebDriver closed
+2025-10-23 00:56:57,838 - selenium_tests.conftest - INFO - Initializing Chrome WebDriver...
+2025-10-23 00:56:57,838 - selenium_tests.conftest - INFO - Detected AMD64 architecture
+2025-10-23 00:56:57,838 - selenium_tests.conftest - INFO - Using local ChromeDriver: D:\strategy-forge-insight\Backend\tests\selenium_tests\drivers\chromedriver-win64\chromedriver.exe
+2025-10-23 00:56:59,017 - selenium_tests.conftest - INFO - WebDriver initialized successfully
+2025-10-23 00:56:59,018 - selenium_tests.test_2_backtesting - INFO - ================================================================================
+2025-10-23 00:56:59,033 - selenium_tests.test_2_backtesting - INFO - Starting Test Case 2: Backtesting Page Test
+2025-10-23 00:56:59,033 - selenium_tests.test_2_backtesting - INFO - ================================================================================
+2025-10-23 00:56:59,034 - selenium_tests.test_2_backtesting - INFO - Pre-requisite: Logging in to application
+2025-10-23 00:56:59,564 - utils - INFO - Page loaded completely
+2025-10-23 00:57:01,630 - utils - INFO - Element clickable: //button[contains(text(), 'Login') or contains(text(), 'Sign Up')]
+2025-10-23 00:57:01,828 - utils - INFO - Clicked: Login button
+2025-10-23 00:57:03,872 - utils - INFO - Element found: input[type='email']
+2025-10-23 00:57:04,196 - utils - INFO - Element found: input[type='password']
+2025-10-23 00:57:04,312 - utils - INFO - Element clickable: //button[@type='submit' and (contains(text(), 'Sign') or contains(text(), 'Login'))]
+2025-10-23 00:57:04,384 - utils - INFO - Clicked: Submit button
+2025-10-23 00:57:07,395 - utils - INFO - URL contains: dashboard
+2025-10-23 00:57:07,395 - selenium_tests.test_2_backtesting - INFO - Pre-requisite completed - Login successful
+2025-10-23 00:57:07,395 - selenium_tests.test_2_backtesting - INFO - Step 1: Navigate to backtesting page
+2025-10-23 00:57:07,741 - utils - INFO - Page loaded completely
+2025-10-23 00:57:10,848 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step1_backtesting_page_loaded_20251023_005710.png
+2025-10-23 00:57:10,861 - selenium_tests.test_2_backtesting - INFO - Step 2: Verify backtesting page title and header
+2025-10-23 00:57:10,889 - utils - INFO - Element found: //*[contains(text(), 'Backtest') or contains(text(), 'Strategy Test')]
+2025-10-23 00:57:11,036 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step2_page_heading_20251023_005710.png
+2025-10-23 00:57:11,044 - selenium_tests.test_2_backtesting - INFO - Step 3: Verify strategy selection input field
+2025-10-23 00:57:21,061 - utils - INFO - Found 0 elements matching: select
+2025-10-23 00:57:21,074 - utils - INFO - Found 1 elements matching: input[type='text'], input:not([type])
+2025-10-23 00:57:21,173 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step3_strategy_input_20251023_005721.png
+2025-10-23 00:57:21,181 - selenium_tests.test_2_backtesting - INFO - Step 4: Verify symbol/ticker input field
+2025-10-23 00:57:31,245 - utils - INFO - Found 0 elements matching: //input[contains(@placeholder, 'symbol') or contains(@placeholder, 'ticker') or contains(@placeholder, 'Symbol') or contains(@placeholder, 'Ticker') or @name='symbol' or @id='symbol']
+2025-10-23 00:57:31,376 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step4_symbol_input_20251023_005731.png
+2025-10-23 00:57:31,381 - selenium_tests.test_2_backtesting - INFO - Step 5: Verify date range input fields
+2025-10-23 00:57:31,391 - utils - INFO - Found 2 elements matching: input[type='date']
+2025-10-23 00:57:31,399 - utils - INFO - Found 1 elements matching: //*[contains(@class, 'date') or contains(@class, 'calendar')]
+2025-10-23 00:57:31,505 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step5_date_inputs_20251023_005731.png
+2025-10-23 00:57:31,513 - selenium_tests.test_2_backtesting - INFO - Step 6: Verify run/execute backtest button
+2025-10-23 00:57:31,526 - utils - INFO - Found 2 elements matching: //button[contains(text(), 'Run') or contains(text(), 'Execute') or contains(text(), 'Start') or contains(text(), 'Backtest')]
+2025-10-23 00:57:31,639 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step6_run_button_20251023_005731.png
+2025-10-23 00:57:31,646 - selenium_tests.test_2_backtesting - INFO - Step 7: Verify results display area or chart container
+2025-10-23 00:57:41,679 - utils - INFO - Found 0 elements matching: canvas
+2025-10-23 00:57:41,709 - utils - INFO - Found 28 elements matching: svg
+2025-10-23 00:57:41,816 - utils - INFO - Screenshot saved: D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step7_results_area_20251023_005741.png
+2025-10-23 00:57:41,823 - selenium_tests.test_2_backtesting - INFO - ================================================================================
+2025-10-23 00:57:41,831 - selenium_tests.test_2_backtesting - INFO - ================================================================================
+2025-10-23 00:57:41,832 - selenium_tests.conftest - INFO - Closing WebDriver...
+2025-10-23 00:57:44,130 - selenium_tests.conftest - INFO - WebDriver closed
+2025-10-23 00:57:48,190 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 00:57:48,190 - selenium_tests.conftest - INFO - Test Session Completed
+2025-10-23 00:57:48,190 - selenium_tests.conftest - INFO - ================================================================================
+2025-10-23 00:57:48,218 - utils - INFO - HTML report generated: D:\strategy-forge-insight\Backend\tests\selenium_tests\reports\test_case_report_20251023_005748.html

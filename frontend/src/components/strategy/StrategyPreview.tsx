@@ -12,7 +12,33 @@ import {
   CheckCircle,
   XCircle
 } from "lucide-react";
-import { Strategy } from "@/pages/DragDropStrategyBuilder";
+
+interface Parameter {
+  id: string;
+  name: string;
+  type: 'indicator' | 'condition' | 'action' | string;
+  category?: string;
+}
+
+interface Condition {
+  id: string;
+  logic: string;
+  parameters: Parameter[];
+}
+
+interface RiskManagement {
+  stopLoss: number;
+  takeProfit: number;
+  positionSize: number;
+  maxPositions: number;
+  riskPerTrade: number;
+}
+
+interface Strategy {
+  conditions: Condition[];
+  timeframe: string;
+  riskManagement: RiskManagement;
+}
 
 interface StrategyPreviewProps {
   strategy: Strategy;

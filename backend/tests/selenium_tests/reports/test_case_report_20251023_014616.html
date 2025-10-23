@@ -1,0 +1,343 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Selenium Test Report - Strategy Forge Insight</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background-color: #f5f5f5;
+            }
+            .header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
+            .test-case {
+                background: white;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .test-case-header {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 5px;
+                margin-bottom: 15px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 12px;
+                text-align: left;
+            }
+            th {
+                background-color: #667eea;
+                color: white;
+                font-weight: bold;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            .pass {
+                color: #28a745;
+                font-weight: bold;
+            }
+            .fail {
+                color: #dc3545;
+                font-weight: bold;
+            }
+            .info {
+                color: #17a2b8;
+            }
+            .screenshot {
+                max-width: 200px;
+                margin: 5px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Selenium Test Execution Report</h1>
+            <p><strong>Project:</strong> Strategy Forge Insight</p>
+            <p><strong>Execution Date:</strong> 2025-10-23 01:46:16</p>
+            <p><strong>Total Test Cases:</strong> 3</p>
+        </div>
+    
+        <div class="test-case">
+            <div class="test-case-header">
+                <h2>Test 1: Login Test Case</h2>
+                <p><strong>Test Priority:</strong> High</p>
+                <p><strong>Test Execution Date:</strong> 2025-10-23 01:44:12</p>
+                <p><strong>Status:</strong> <span class="pass">Pass</span></p>
+                <p><strong>Steps Passed:</strong> 7 | <strong>Steps Failed:</strong> 0</p>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Step</th>
+                        <th>Test Step</th>
+                        <th>Test Data</th>
+                        <th>Expected Result</th>
+                        <th>Actual Result</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>1</td>
+                        <td>Navigate to application URL</td>
+                        <td>http://localhost:8080</td>
+                        <td>Landing page loads successfully, Login/Sign Up button is visible</td>
+                        <td>Landing page loaded successfully. Page title: Growmore</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>2</td>
+                        <td>Click 'Login / Sign Up' button to open authentication modal</td>
+                        <td>Click 'Login / Sign Up' button</td>
+                        <td>Authentication modal opens with login form visible</td>
+                        <td>Authentication modal opened successfully. Modal visible: True</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>3</td>
+                        <td>Enter email address in the email input field</td>
+                        <td>jijosaji003@gmail.com</td>
+                        <td>Email address is entered successfully in the email field</td>
+                        <td>Email entered successfully: jijosaji003@gmail.com</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>4</td>
+                        <td>Enter password in the password input field</td>
+                        <td>Password: ********</td>
+                        <td>Password is entered successfully in the password field</td>
+                        <td>Password entered successfully. Field has 9 characters</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>5</td>
+                        <td>Click submit button to authenticate</td>
+                        <td>Click 'Sign in' or 'Login' button</td>
+                        <td>Login request is submitted successfully</td>
+                        <td>Login form submitted successfully</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>6</td>
+                        <td>Verify successful authentication and dashboard redirect</td>
+                        <td>Wait for dashboard page to load</td>
+                        <td>User is redirected to dashboard, welcome message is displayed</td>
+                        <td>Login successful! Redirected to: http://localhost:8080/dashboard. Dashboard loaded: True</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>7</td>
+                        <td>Verify dashboard UI elements are present and visible</td>
+                        <td>Check for key dashboard components</td>
+                        <td>Dashboard metrics, charts, and navigation are visible</td>
+                        <td>Dashboard elements verified: Metrics cards: 0, Buttons: 25</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                </tbody>
+            </table>
+        <h3>Screenshots:</h3><div><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step1_landing_page_20251023_014415.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step2_auth_modal_opened_20251023_014419.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step3_email_entered_20251023_014420.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step4_password_entered_20251023_014422.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step5_login_submitted_20251023_014425.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step6_login_successful_20251023_014428.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step7_dashboard_elements_20251023_014439.png" class="screenshot" /></div></div>
+        <div class="test-case">
+            <div class="test-case-header">
+                <h2>Test 2: Backtesting Page Test Case</h2>
+                <p><strong>Test Priority:</strong> High</p>
+                <p><strong>Test Execution Date:</strong> 2025-10-23 01:44:46</p>
+                <p><strong>Status:</strong> <span class="pass">Pass</span></p>
+                <p><strong>Steps Passed:</strong> 6 | <strong>Steps Failed:</strong> 1</p>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Step</th>
+                        <th>Test Step</th>
+                        <th>Test Data</th>
+                        <th>Expected Result</th>
+                        <th>Actual Result</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>1</td>
+                        <td>Navigate to backtesting page URL</td>
+                        <td>http://localhost:8080/backtesting</td>
+                        <td>Backtesting page loads successfully with heading visible</td>
+                        <td>Backtesting page loaded. URL: http://localhost:8080/backtesting</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>2</td>
+                        <td>Verify page title/heading is displayed</td>
+                        <td>Check for page heading</td>
+                        <td>Page displays 'Backtesting' or similar heading</td>
+                        <td>Page heading found: 'Backtesting'. Visible: True</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>3</td>
+                        <td>Verify strategy selection input is present</td>
+                        <td>Check for strategy selector/input</td>
+                        <td>Strategy selection input or dropdown is present and interactable</td>
+                        <td>Strategy input field found: True. Type: Input field (found 1 input elements)</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>4</td>
+                        <td>Verify symbol/ticker input field is present</td>
+                        <td>Check for symbol/ticker input</td>
+                        <td>Symbol input field is present and can accept text</td>
+                        <td>Symbol input found: False. Placeholder: ''</td>
+                        <td class="fail">Fail</td>
+                    </tr>
+            
+                    <tr>
+                        <td>5</td>
+                        <td>Verify date range input fields are present</td>
+                        <td>Check for start date and end date inputs</td>
+                        <td>Date input fields are present for selecting date range</td>
+                        <td>Date inputs found: 3. Types: Date inputs: 2, Date pickers: 1</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>6</td>
+                        <td>Verify run/execute backtest button is present</td>
+                        <td>Check for run/execute button</td>
+                        <td>Run button is present and clickable</td>
+                        <td>Run button found: True. Button text: 'Backtesting'</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>7</td>
+                        <td>Verify results display area or chart container is present</td>
+                        <td>Check for results area, chart container, or canvas</td>
+                        <td>Results area or chart container is present for displaying backtest results</td>
+                        <td>Results area found: True. Type: SVG elements: 28</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                </tbody>
+            </table>
+        <h3>Screenshots:</h3><div><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step1_backtesting_page_loaded_20251023_014459.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step2_page_heading_20251023_014459.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step3_strategy_input_20251023_014509.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step4_symbol_input_20251023_014519.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step5_date_inputs_20251023_014519.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step6_run_button_20251023_014520.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step7_results_area_20251023_014530.png" class="screenshot" /></div></div>
+        <div class="test-case">
+            <div class="test-case-header">
+                <h2>Test 3: Drag and Drop Strategy Builder Test Case</h2>
+                <p><strong>Test Priority:</strong> High</p>
+                <p><strong>Test Execution Date:</strong> 2025-10-23 01:45:38</p>
+                <p><strong>Status:</strong> <span class="pass">Pass</span></p>
+                <p><strong>Steps Passed:</strong> 6 | <strong>Steps Failed:</strong> 1</p>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Step</th>
+                        <th>Test Step</th>
+                        <th>Test Data</th>
+                        <th>Expected Result</th>
+                        <th>Actual Result</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>1</td>
+                        <td>Navigate to drag-drop strategy builder page</td>
+                        <td>http://localhost:8080/drag-drop-strategy-builder</td>
+                        <td>Strategy builder page loads successfully</td>
+                        <td>Strategy builder page loaded. URL: http://localhost:8080/drag-drop-strategy-builder</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>2</td>
+                        <td>Verify strategy builder page heading is displayed</td>
+                        <td>Check for page heading</td>
+                        <td>Page displays 'Strategy Builder' or similar heading</td>
+                        <td>Page heading found: 'Strategy Library'. Visible: True</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>3</td>
+                        <td>Verify component library/indicator palette is present</td>
+                        <td>Check for component library or indicator palette</td>
+                        <td>Component library with draggable items is visible</td>
+                        <td>Component library found: True. Details: Library containers: 1</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>4</td>
+                        <td>Verify workspace/canvas area is present</td>
+                        <td>Check for workspace or canvas area</td>
+                        <td>Workspace/canvas area is present where components can be dropped</td>
+                        <td>Workspace area found: True. Type: Workspace elements: 2</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>5</td>
+                        <td>Test drag and drop functionality of components</td>
+                        <td>Drag an indicator/component to workspace</td>
+                        <td>Component can be dragged and dropped successfully</td>
+                        <td>Drag-drop test: Dragged 'Indicator Library' to workspace</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                    <tr>
+                        <td>6</td>
+                        <td>Verify strategy name input field is present</td>
+                        <td>Check for strategy name input</td>
+                        <td>Strategy name input field is present</td>
+                        <td>Strategy name input found: False. </td>
+                        <td class="fail">Fail</td>
+                    </tr>
+            
+                    <tr>
+                        <td>7</td>
+                        <td>Verify save/submit button is present</td>
+                        <td>Check for save or submit button</td>
+                        <td>Save button is present to save strategy</td>
+                        <td>Save button found: True. Button text: 'Save'</td>
+                        <td class="pass">Pass</td>
+                    </tr>
+            
+                </tbody>
+            </table>
+        <h3>Screenshots:</h3><div><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step1_builder_page_loaded_20251023_014545.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step2_builder_heading_20251023_014546.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step3_component_library_20251023_014556.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step4_workspace_area_20251023_014556.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step5_drag_drop_test_20251023_014609.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step6_name_input_20251023_014609.png" class="screenshot" /><img src="D:\strategy-forge-insight\Backend\tests\selenium_tests\screenshots\step7_save_button_20251023_014609.png" class="screenshot" /></div></div>
+    </body>
+    </html>
+    
