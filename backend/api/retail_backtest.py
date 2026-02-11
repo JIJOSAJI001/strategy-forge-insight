@@ -324,6 +324,113 @@ async def run_backtest(
         raise HTTPException(status_code=500, detail=f"Backtest execution failed: {str(e)}")
 
 
+
+@router.get("/market-data")
+async def get_market_data(
+    symbol: str = Query(..., description="Stock symbol (e.g., AAPL)"),
+    timeframe: str = Query("1d", description="Timeframe (1d, 1h, etc.)"),
+    start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
+    end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
+    # user: Dict[str, Any] = Depends(verify_firebase_token)  # Temporarily disabled for demo access
+):
+    """
+    Get historical market data for paper trading
+    """
+    try:
+        start_datetime = datetime.fromisoformat(start_date)
+        end_datetime = datetime.fromisoformat(end_date)
+        
+        df = await get_data(
+            symbol=symbol.upper(),
+            start_date=start_datetime,
+            end_date=end_datetime,
+            timeframe=timeframe
+        )
+        
+        if df.empty:
+            raise HTTPException(status_code=404, detail=f"No data found for {symbol}")
+            
+        # Convert to list of dicts for JSON response
+        records = []
+        for _, row in df.iterrows():
+            records.append({
+                "time": row['date'].timestamp() * 1000, # Frontend expects ms timestamp
+                "open": row['open'],
+                "high": row['high'],
+                "low": row['low'],
+                "close": row['close'],
+                "volume": row['volume']
+            })
+            
+        return records
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch market data: {str(e)}")
+
+
+@router.post("/paper-trading/save-session")
+async def save_paper_trading_session(
+    session_data: Dict[str, Any],
+    user: Dict[str, Any] = Depends(verify_firebase_token)
+):
+    """
+    Save a completed paper trading session
+    """
+    try:
+        sessions = MongoDB.get_collection("paper_trading_sessions")
+        
+        doc = {
+            "user_id": user.get("uid"),
+            "strategy_id": session_data.get("strategyId"),
+            "symbol": session_data.get("symbol"),
+            "start_date": session_data.get("startDate"),
+            "end_date": session_data.get("endDate"),
+            "initial_balance": session_data.get("initialBalance"),
+            "final_balance": session_data.get("finalBalance"),
+            "trades": session_data.get("trades"),
+            "created_at": datetime.utcnow()
+        }
+        
+        result = await sessions.insert_one(doc)
+        
+        return {
+            "success": True, 
+            "id": str(result.inserted_id),
+            "message": "Session saved successfully"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save session: {str(e)}")
+
+
+@router.get("/paper-trading/history")
+async def get_paper_trading_history(
+    limit: int = 10,
+    skip: int = 0,
+    user: Dict[str, Any] = Depends(verify_firebase_token)
+):
+    """
+    Get paper trading history for the authenticated user
+    """
+    try:
+        sessions = MongoDB.get_collection("paper_trading_sessions")
+        
+        cursor = sessions.find({"user_id": user.get("uid")})\
+            .sort("created_at", -1)\
+            .skip(skip)\
+            .limit(limit)
+            
+        results = []
+        async for doc in cursor:
+            doc["_id"] = str(doc["_id"])
+            results.append(doc)
+            
+        return results
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch history: {str(e)}")
+
+
 @router.get("/history")
 async def get_backtest_history(
     strategy_id: Optional[str] = Query(None, description="Filter by strategy ID"),
@@ -440,3 +547,4 @@ async def delete_backtest(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete backtest: {str(e)}")
+

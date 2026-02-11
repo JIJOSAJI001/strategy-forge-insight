@@ -30,40 +30,43 @@ export function DashboardCharts() {
         setLoading(true);
         const token = user ? await user.getIdToken() : null;
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const userId = user?.uid;
 
-        // Fetch equity curve with user context
-        const equityResponse = await fetch(
-          `${API_BASE_URL}/api/dashboard/equity-curve`, 
-          { headers }
-        );
-        if (equityResponse.ok) {
-          const equityResult = await equityResponse.json();
-          setEquityData(equityResult.data);
+        // **OPTIMIZED: Fetch all charts data in parallel**
+        const [equityResult, drawdownResult, performanceResult] = await Promise.allSettled([
+          fetch(`${API_BASE_URL}/api/dashboard/equity-curve`, { headers }),
+          fetch(`${API_BASE_URL}/api/dashboard/drawdown-history`, { headers }),
+          fetch(`${API_BASE_URL}/api/dashboard/performance-comparison`, { headers })
+        ]);
+
+        // Process equity curve
+        if (equityResult.status === 'fulfilled' && equityResult.value.ok) {
+          const equityData = await equityResult.value.json();
+          setEquityData(equityData.data);
+        } else {
+          setEquityData([]);
         }
 
-        // Fetch drawdown with user context
-        const drawdownResponse = await fetch(
-          `${API_BASE_URL}/api/dashboard/drawdown-history`, 
-          { headers }
-        );
-        if (drawdownResponse.ok) {
-          const drawdownResult = await drawdownResponse.json();
-          setDrawdownData(drawdownResult.data);
+        // Process drawdown
+        if (drawdownResult.status === 'fulfilled' && drawdownResult.value.ok) {
+          const drawdownData = await drawdownResult.value.json();
+          setDrawdownData(drawdownData.data);
+        } else {
+          setDrawdownData([]);
         }
 
-        // Fetch performance comparison with user context
-        const performanceResponse = await fetch(
-          `${API_BASE_URL}/api/dashboard/performance-comparison`, 
-          { headers }
-        );
-        if (performanceResponse.ok) {
-          const performanceResult = await performanceResponse.json();
-          setPerformanceData(performanceResult.data);
+        // Process performance comparison
+        if (performanceResult.status === 'fulfilled' && performanceResult.value.ok) {
+          const performanceData = await performanceResult.value.json();
+          setPerformanceData(performanceData.data);
+        } else {
+          setPerformanceData([]);
         }
       } catch (error) {
         console.error('Error fetching chart data:', error);
         // Use empty data on error
+        setEquityData([]);
+        setDrawdownData([]);
+        setPerformanceData([]);
       } finally {
         setLoading(false);
       }

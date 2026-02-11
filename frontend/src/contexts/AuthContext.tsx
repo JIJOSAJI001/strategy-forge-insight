@@ -14,7 +14,13 @@ interface AuthContextType {
   role: Role | null;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  getToken: () => Promise<string | null>;
 }
+
+// Token cache to reduce Firebase API calls (tokens valid for 1 hour)
+let cachedToken: string | null = null;
+let tokenTimestamp: number = 0;
+const TOKEN_CACHE_DURATION = 55 * 60 * 1000; // 55 minutes in milliseconds
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -42,10 +48,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setRedirected(true);
   };
 
-  // Improved fetchUserRole with retry logic
+  // Optimized token retrieval with caching
+  const getToken = async (): Promise<string | null> => {
+    if (!user) return null;
+    
+    const now = Date.now();
+    // Return cached token if still valid (less than 55 minutes old)
+    if (cachedToken && (now - tokenTimestamp) < TOKEN_CACHE_DURATION) {
+      return cachedToken;
+    }
+    
+    // Fetch new token (don't force refresh unless cache is empty)
+    try {
+      cachedToken = await user.getIdToken(false);
+      tokenTimestamp = now;
+      return cachedToken;
+    } catch (error) {
+      console.error("Failed to get token:", error);
+      // Clear cache on error
+      cachedToken = null;
+      tokenTimestamp = 0;
+      return null;
+    }
+  };
+
+  // Improved fetchUserRole with retry logic and cached tokens
   const fetchUserRole = async (firebaseUser: User) => {
     try {
-      const token = await firebaseUser.getIdToken(true);
+      // Use cached token if available
+      const now = Date.now();
+      let token: string;
+      
+      if (cachedToken && (now - tokenTimestamp) < TOKEN_CACHE_DURATION) {
+        token = cachedToken;
+      } else {
+        token = await firebaseUser.getIdToken(false);
+        cachedToken = token;
+        tokenTimestamp = now;
+      }
+      
       const apiBase = (import.meta as any).env.VITE_API_URL || "http://localhost:8000";
       const res = await fetch(`${apiBase}/api/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -53,8 +94,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (res.status === 401) {
         console.log("401 error, retrying with fresh token...");
-        // Retry once with fresh token
+        // Clear cache and retry once with fresh token
         const freshToken = await firebaseUser.getIdToken(true);
+        cachedToken = freshToken;
+        tokenTimestamp = Date.now();
+        
         const retryRes = await fetch(`${apiBase}/api/users/me`, {
           headers: { Authorization: `Bearer ${freshToken}` },
         });
@@ -105,6 +149,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     setRedirected(false);
+    // Clear token cache on logout
+    cachedToken = null;
+    tokenTimestamp = 0;
     await signOut(auth);
   };
 
@@ -182,7 +229,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, displayName, refreshUser, role, login, loginWithGoogle }}>
+    <AuthContext.Provider value={{ user, loading, logout, displayName, refreshUser, role, login, loginWithGoogle, getToken }}>
       {children}
     </AuthContext.Provider>
   );
