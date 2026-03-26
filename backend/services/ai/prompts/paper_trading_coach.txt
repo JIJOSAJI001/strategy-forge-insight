@@ -1,0 +1,8 @@
+Task: Review paper trading behavior and execution quality.
+
+Requirements:
+- Identify behavior patterns from paper-session metrics and trade outcomes.
+- Compare paper performance with backtest metrics when available.
+- Explain execution drift with metric evidence.
+- Respect guardrails: no advice, no prediction, no optimization.
+

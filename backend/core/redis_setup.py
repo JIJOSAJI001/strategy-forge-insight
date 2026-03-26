@@ -33,9 +33,9 @@ class RedisCache:
             # Test connection
             await cls.client.ping()
             cls._connected = True
-            print(f"✅ Redis connected at {redis_url}")
+            print(f"Redis connected at {redis_url}")
         except Exception as e:
-            print(f"⚠️  Redis connection failed: {e}")
+            print(f"Redis connection failed: {e}")
             print("   Continuing without cache (will use database directly)")
             cls._connected = False
             cls.client = None
@@ -63,7 +63,7 @@ class RedisCache:
                 return json.loads(value)
             return None
         except Exception as e:
-            print(f"⚠️  Redis GET error: {e}")
+            print(f"Redis GET error: {e}")
             return None
     
     @classmethod
@@ -80,7 +80,7 @@ class RedisCache:
             await cls.client.set(key, serialized, ex=ttl)
             return True
         except Exception as e:
-            print(f"⚠️  Redis SET error: {e}")
+            print(f"Redis SET error: {e}")
             return False
     
     @classmethod
@@ -93,7 +93,7 @@ class RedisCache:
             await cls.client.delete(key)
             return True
         except Exception as e:
-            print(f"⚠️  Redis DELETE error: {e}")
+            print(f"Redis DELETE error: {e}")
             return False
     
     @classmethod
@@ -111,7 +111,7 @@ class RedisCache:
                 return await cls.client.delete(*keys)
             return 0
         except Exception as e:
-            print(f"⚠️  Redis CLEAR error: {e}")
+            print(f"Redis CLEAR error: {e}")
             return 0
     
     @classmethod
@@ -136,3 +136,4 @@ def drawdown_key(user_id: str) -> str:
 def performance_key(user_id: str) -> str:
     """Generate cache key for performance comparison"""
     return f"dashboard:performance:{user_id}"
+

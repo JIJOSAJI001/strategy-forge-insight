@@ -10,11 +10,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { StrategyCard } from "@/components/dashboard/StrategyCard";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { 
-  Search, 
-  Filter, 
-  Star, 
-  TrendingUp, 
+import {
+  Search,
+  Filter,
+  Star,
+  TrendingUp,
   Download,
   Plus,
   Grid3X3,
@@ -65,25 +65,25 @@ export default function StrategyLibrary() {
     const fetchStrategies = async () => {
       try {
         setLoading(true);
-        
+
         // **OPTIMIZED: Use cached token from AuthContext**
         const token = getToken ? await getToken() : null;
         const headers: HeadersInit = {
           'Content-Type': 'application/json',
         };
-        
+
         if (token) {
           headers['Authorization'] = `Bearer ${token}`;
         }
-        
+
         const response = await fetch(`${API_BASE_URL}/api/strategies`, {
           headers
         });
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
         setStrategies(data);
         setError(null);
@@ -110,8 +110,8 @@ export default function StrategyLibrary() {
   const filteredStrategies = strategies
     .filter(strategy => {
       const matchesSearch = strategy.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          strategy.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          strategy.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+        strategy.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        strategy.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesCategory = selectedCategory === "All" || strategy.category === selectedCategory;
       const matchesDifficulty = selectedDifficulty === "All" || strategy.difficulty === selectedDifficulty;
       return matchesSearch && matchesCategory && matchesDifficulty;
@@ -312,8 +312,8 @@ export default function StrategyLibrary() {
                   {strategy.difficulty && (
                     <Badge variant={
                       strategy.difficulty === "Beginner" ? "secondary" :
-                      strategy.difficulty === "Intermediate" ? "default" :
-                      strategy.difficulty === "Advanced" ? "secondary" : "outline"
+                        strategy.difficulty === "Intermediate" ? "default" :
+                          strategy.difficulty === "Advanced" ? "secondary" : "outline"
                     }>
                       {strategy.difficulty}
                     </Badge>
@@ -359,16 +359,16 @@ export default function StrategyLibrary() {
                   <span>{strategy.downloads} downloads</span>
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    variant="trading" 
-                    size="sm" 
+                  <Button
+                    variant="trading"
+                    size="sm"
                     className="flex-1"
                     onClick={() => handleUseStrategy(strategy.id)}
                   >
                     Use Strategy
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => handlePreview(strategy)}
                   >
@@ -408,15 +408,15 @@ export default function StrategyLibrary() {
                     </div>
                   </div>
                   <div className="flex gap-2 ml-6">
-                    <Button 
-                      variant="trading" 
+                    <Button
+                      variant="trading"
                       size="sm"
                       onClick={() => handleUseStrategy(strategy.id)}
                     >
-                      Use Strategyrfrfrfr
+                      Use Strategy
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => handlePreview(strategy)}
                     >
@@ -483,7 +483,7 @@ export default function StrategyLibrary() {
                   <div>Downloads: {previewStrategy.downloads}</div>
                   <div>Last Updated: {previewStrategy.lastUpdated || 'N/A'}</div>
                 </div>
-                <Button 
+                <Button
                   variant="trading"
                   onClick={() => {
                     setPreviewStrategy(null);

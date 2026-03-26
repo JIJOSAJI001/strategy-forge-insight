@@ -36,53 +36,49 @@ export function AppLayout({ children, hideSidebar, hideTopNavLinks }: AppLayoutP
                 <h1 className="text-xl font-bold text-[#F9FAFB]">Growmore</h1>
               </div>
             </div>
-            
+
             {/* Navigation Links */}
             {!hideTopNavLinks && (
               <nav className="hidden md:flex items-center gap-6">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151] font-medium"
                   onClick={() => navigate('/')}
                 >
                   Dashboard
                 </Button>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151] font-medium"
                   onClick={() => navigate('/strategies')}
                 >
                   Strategy Library
                 </Button>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151] font-medium"
                   onClick={() => navigate('/backtesting')}
                 >
                   Backtesting
                 </Button>
-                {/* Temporarily hidden - coming soon
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151] font-medium"
                   onClick={() => navigate('/portfolio')}
-                  disabled
                 >
                   Portfolio
                 </Button>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="text-[#3B82F6] hover:text-[#60A5FA] hover:bg-[#374151] font-medium"
                   onClick={() => navigate('/ai-assistant')}
-                  disabled
                 >
                   <Sparkles className="h-4 w-4 mr-2" />
                   AI Assistant
                 </Button>
-                */}
               </nav>
             )}
-            
+
             <div className="flex items-center gap-3">
               <ThemeToggle />
               <Button variant="ghost" size="icon" className="relative text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#374151]">

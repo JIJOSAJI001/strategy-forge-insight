@@ -33,6 +33,11 @@ export const API_CONFIG = {
     
     // Data endpoints
     MARKET_DATA: '/api/data',
+
+    // AI assistant endpoints
+    AI_CHAT: '/api/ai/chat',
+    AI_ANALYZE_STRATEGY: (strategyId: string) => `/api/ai/analyze-strategy/${strategyId}`,
+    AI_ANALYZE_PAPER_SESSION: (sessionId: string) => `/api/ai/analyze-paper-session/${sessionId}`,
   }
 };
 

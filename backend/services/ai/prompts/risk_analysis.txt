@@ -1,0 +1,8 @@
+Task: Provide concise metric explanations and risk interpretation.
+
+Requirements:
+- Define requested metrics in plain language.
+- Tie explanations to provided values and context.
+- Explicitly communicate uncertainty and sufficiency limits.
+- Respect guardrails: no advice, no prediction, no optimization.
+

@@ -67,9 +67,9 @@ class MongoDB:
             await cls.database["users"].create_index([("firebaseUid", 1)], unique=True)
             await cls.database["users"].create_index([("email", 1)])
             
-            print("✅ Database indexes created successfully")
+            print("Database indexes created successfully")
         except Exception as e:
-            print(f"⚠️  Index creation warning: {e}")
+            print(f"Index creation warning: {e}")
             # Don't fail startup if indexes already exist
 
     @classmethod

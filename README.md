@@ -5,7 +5,7 @@ Strategy Forge Insight is a comprehensive platform designed for creating, testin
 ## 🚀 Features
 
 ### Frontend
-The frontend is built with **React** and **TypeScript**, focusing on user experience and performance.
+The frontend is built with **React** and ** **, focusing on user experience and performance.
 - **Modern UI/UX**: Built with **Shadcn UI** and **Tailwind CSS** for a sleek, responsive design.
 - **Interactive Charts**: Visualizes market data and backtest results using **Recharts**.
 - **Strategy Building**: Intuitive drag-and-drop interface powered by **dnd-kit**.

@@ -12,3 +12,6 @@ pyarrow==16.1.0
 firebase-admin==6.2.0
 redis==5.0.1
 hiredis==2.3.2
+openai==1.58.1
+faiss-cpu==1.9.0
+tiktoken==0.8.0

@@ -1,0 +1,8 @@
+Task: Analyze strategy behavior from persisted reports.
+
+Requirements:
+- Explain strengths, weaknesses, risk structure, stability, and caveats.
+- Reference specific metrics where possible.
+- Use backtest and paper-session divergence if available.
+- Respect guardrails: no advice, no prediction, no optimization.
+
