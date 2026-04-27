@@ -1,0 +1,9 @@
+# ngrok binary directory (if downloaded locally)
+ngrok_bin/
+
+# ngrok config with authtoken (keep ngrok.yml but don't push authtoken)
+# ngrok.yml is committed intentionally (authtoken is already in it)
+# .ngrok2/
+
+# pyngrok cache
+.ngrok2/

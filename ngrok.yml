@@ -1,0 +1,21 @@
+version: "3"
+
+authtoken: 3Bh60fGHrlqVOzdg5gbZUrdTZdH_81u1bsCNGAJo9Gg5gKfuv
+
+# Single agent, two HTTP tunnels
+tunnels:
+  frontend:
+    proto: http
+    addr: 8080
+    schemes:
+      - https
+
+  backend:
+    proto: http
+    addr: 8000
+    schemes:
+      - https
+    # Pass this header so the FastAPI CORS middleware can read the real origin
+    request_header:
+      add:
+        - "ngrok-skip-browser-warning: true"

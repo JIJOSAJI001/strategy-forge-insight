@@ -41,28 +41,28 @@ const getNavigation = (role: string | null) => {
     { title: "Drag & Drop Builder", url: "/drag-drop-strategy-builder", icon: MousePointer },
     { title: "Paper Trading", url: "/paper-trading", icon: PlayCircle },
   ];
-  
+
   return baseNavigation;
 };
 
 const getTools = (role: string | null) => {
   const baseTools = [
-    { title: "Market Analysis", url: "/market-analysis", icon: TrendingUp },
-    { title: "Optimization", url: "/optimization", icon: Zap },
-    { title: "Scenario Tester", url: "/scenario-tester", icon: TestTube },
-    { title: "Reports", url: "/reports", icon: FileText },
-    { title: "Export", url: "/export", icon: Download },
+    // { title: " ", url: "/market-analysis", icon: TrendingUp },
+    // { title: "", url: "/optimization", icon: Zap },
+    // { title: " ", url: "/scenario-tester", icon: TestTube },
+    // { title: "", url: "/reports", icon: FileText },
+    // { title: "", url: "/export", icon: Download },
     { title: "Profile", url: "/profile", icon: User },
     { title: "Settings", url: "/settings", icon: Settings },
   ];
-  
+
   if (role === "admin") {
     baseTools.unshift(
       { title: "User Management", url: "/user-management", icon: User },
       { title: "Data Management", url: "/data-management", icon: TrendingUp }
     );
   }
-  
+
   return baseTools;
 };
 
@@ -73,7 +73,14 @@ export function AppSidebar() {
   const { role } = useAuth();
 
   const navigation = getNavigation(role);
-  const tools = getTools(role);
+  const allTools = getTools(role);
+
+  // Hide these items on the home/dashboard page only
+  const HOME_HIDDEN_TOOLS = ["Market Analysis", "Optimization", "Scenario Tester", "Reports", "Export"];
+  const isDashboard = location.pathname === "/dashboard" || location.pathname === "/admin-dashboard" || location.pathname === "/";
+  const tools = isDashboard
+    ? allTools.filter((t) => !HOME_HIDDEN_TOOLS.includes(t.title))
+    : allTools;
 
   const isActive = (path: string) => location.pathname === path;
   const getNavClassName = (path: string) =>

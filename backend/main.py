@@ -26,23 +26,28 @@ app = FastAPI(
 )
 
 
+# Explicit origins (localhost + production)
+_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "http://localhost:8082",
+    "http://127.0.0.1:8082",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
+    "http://localhost:8081",
+    "http://127.0.0.1:8081",
+    "https://strategy-forge-insight.vercel.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:8080",
-        "http://127.0.0.1:8080",
-        "http://localhost:8082",
-        "http://127.0.0.1:8082",
-        "http://localhost:4173",
-        "http://127.0.0.1:4173",
-        "http://localhost:8081",
-        "http://127.0.0.1:8081",
-        "https://strategy-forge-insight.vercel.app",
-    ],
+    allow_origins=_ALLOWED_ORIGINS,
+    # Allow any ngrok tunnel URL (https://<random>.ngrok-free.app or ngrok.io)
+    allow_origin_regex=r"https://.*\.ngrok-free\.app|https://.*\.ngrok\.io",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=[
@@ -55,6 +60,7 @@ app.add_middleware(
         "Origin",
         "Access-Control-Request-Method",
         "Access-Control-Request-Headers",
+        "ngrok-skip-browser-warning",
     ],
     expose_headers=["*"],
 )
